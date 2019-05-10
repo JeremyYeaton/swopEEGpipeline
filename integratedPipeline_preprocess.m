@@ -22,86 +22,78 @@ subs = pilotSubs;
 
 %% Import; epoch; filter; separate & mean EOGs
 Tag = 'eeglabSet';
-% for sub = 2%:length(subs)
+for sub = 1:length(subs)
     subID            = subs{sub};
+    EEGLABFILE       = [prepFolder,'\\',subID,'_',Tag,'.set'];
 %     EEG              = pop_biosig([mainDir,'\\raw_data\\',subID,'\\',subID,'.bdf'],...
 %         'channels',1:70,'ref',[65 66] ,'refoptions',{'keepref' 'on'});
 % %     EEG              = pop_rejchan(EEG, 'elec',1:70 ,'threshold',3,'norm','on','measure','kurt');
 %     EEG              = eeg_checkset( EEG );
-    EEGLABFILE       = [subID,'_',Tag,'.set'];
-%     EEG              = pop_saveset( EEG, 'filename',[subID,'_',Tag,'.set'],'filepath',[mainDir,'\\',prepFolder,'\\']);
-    EEGLABFILE       = [prepFolder,'\\',EEGLABFILE];
+%     EEG              = pop_saveset( EEG, 'filename',[subID,'_',Tag,'.set'],'filepath',[mainDir,'\\',EEGLABFILE]);
 %     EEGLABFILE              = [eegLabFolder,'\\',subID,'_',eegLabFolder,'.set'];
     cfg                     = [];
     cfg.dataset             = EEGLABFILE;
-    cfg.trialdef.eventtype  = 'trigger';
-    cfg.trialdef.eventvalue = [112 212];
-%     cfg.trialdef.eventvalue = [can vio];
-    cfg.trialdef.prestim    = .1;
-    cfg.trialdef.poststim   = 1;
-    cfg.method    = 'trial';
-    cfg.preproc.lpfilter            = 'yes'; cfg.preproc.lpfreq = LPF;
-    cfg.preproc.hpfilter            = 'yes'; cfg.preproc.hpfreq = HPF;
-    cfg.preproc.demean              = 'yes';
+    % Preprocessing parameters
+    cfg.method              = 'trial';
+    cfg.preproc.lpfilter    = 'yes'; cfg.preproc.lpfreq = LPF;
+    cfg.preproc.hpfilter    = 'yes'; cfg.preproc.hpfreq = HPF;
+    cfg.preproc.demean      = 'yes';
+    cfg.lpfilter            = 'yes'; cfg.lpfreq = LPF;
+    cfg.hpfilter            = 'yes'; cfg.hpfreq = HPF;
+    cfg.demean              = 'yes';
+    cfg.baselinewindow      = [-0.1 0];
     cfg.continuous          = 'yes';
     cfg.blocksize           = 15;
+    cfg.layout              = 'biosemi64.lay';
+    cfg.trialdef.eventtype  = 'trigger';
+%     cfg.trialdef.eventvalue = 112;
+    cfg.trialdef.eventvalue = [can vio];
+    cfg.trialdef.prestim    = .1;
+    cfg.trialdef.poststim   = 1;
     cfg.trialfun            = 'ft_trialfun_bdf';
     cfg                     = ft_definetrial(cfg);
-    data_raw                = ft_preprocessing(cfg); % read in raw data
+    data                    = ft_preprocessing(cfg);
     % HEOG
-    cfg              = [];
-    cfg.channel      = {'EXG3' 'EXG4'};
-    cfg.reref        = 'yes';
-    cfg.implicitref  = [];
-    cfg.refchannel   = {'EXG4'};
-    eogh             = ft_preprocessing(cfg, data_raw);
-    cfg              = [];
-    cfg.channel      = 'EXG3';
-    eogh             = ft_selectdata(cfg, eogh);
-    eogh.label       = {'HEOG'};
+    cfg                     = data.cfg;
+    cfg.channel             = {'EXG3' 'EXG4'};
+    cfg.reref               = 'yes';
+    cfg.implicitref         = [];
+    cfg.refchannel          = {'EXG4'};
+    eogh                    = ft_preprocessing(cfg, data);
+    cfg                     = data.cfg;
+    cfg.channel             = 'EXG3';
+    eogh                    = ft_selectdata(cfg, eogh);
+    eogh.label              = {'HEOG'};
     % VEOG
-    cfg              = [];
-    cfg.channel      = {'EXG5' 'EXG6'};
-    cfg.reref        = 'yes';
-    cfg.implicitref  = [];
-    cfg.refchannel   = {'EXG6'};
-    eogv             = ft_preprocessing(cfg, data_raw);
-    cfg              = [];
-    cfg.channel      = 'EXG5';
-    eogv             = ft_selectdata(cfg, eogv);
-    eogv.label       = {'VEOG'};
-    cfg              = [];
-    cfg.channel      = setdiff(1:64, 65:70);
-    data             = ft_selectdata(cfg, data_raw);
+    cfg                     = data.cfg;
+    cfg.channel             = {'EXG5' 'EXG6'};
+    cfg.reref               = 'yes';
+    cfg.implicitref         = [];
+    cfg.refchannel          = {'EXG6'};
+    eogv                    = ft_preprocessing(cfg, data);
+    cfg                     = data.cfg;
+    cfg.channel             = 'EXG5';
+    eogv                    = ft_selectdata(cfg, eogv);
+    eogv.label              = {'VEOG'};
+%     cfg                     = [];
+    data.cfg.channel        = setdiff(1:64, 65:70);
+    data                    = ft_selectdata(data.cfg, data);
     % append the EOGH and EOGV channel to the EEG channels
-    data             = ft_appenddata(cfg, data, eogv, eogh); % data1
-    data1 = data;
-    %%
-    data = data1;
-    % Preprocessing parameters   
-    cfg = [];
-%     cfg.headerfile = EEGLABFILE;
-%     cfg.trialdef.eventtype  = 'trigger';
-%     cfg.trialdef.eventvalue = [can vio];
-%     cfg.trialdef.prestim    = .1;
-%     cfg.trialdef.poststim   = 1;
-%     cfg.method    = 'trial';
-%     cfg.preproc.lpfilter            = 'yes'; cfg.preproc.lpfreq = LPF;
-%     cfg.preproc.hpfilter            = 'yes'; cfg.preproc.hpfreq = HPF;
-%     cfg.preproc.demean              = 'yes';
-%     cfg.continuous          = 'yes';
-%     cfg.blocksize           = 15;
-%     cfg.trialfun            = 'ft_trialfun_bdf';
-%     cfg                     = ft_definetrial(cfg);
-    cfg = rmfield(cfg,{'dataset','headerfile','datafile','trl'});
-    data             = ft_preprocessing(cfg,data);
-    %%
-    cfg = [];
-    cfg.layout = 'biosemi64.lay';
-    cfg.channel = 1:64;
-    data2 = ft_rejectvisual(cfg,data);
+    data                    = ft_appenddata(data.cfg, data, eogv, eogh); % data1
+    data                    = ft_preprocessing(data.cfg,data);
+    save([prepFolder,'\\',subID,'_',prepFolder,'.mat'],'data')
+end
+% save('participant2_data.mat','data')
+    %% Visual artifact rejection
+chansToPop = {'P8','PO4','POz','P10'}; %(60)
+allChans = ones(length(data.label),1);
+chans = ismember(data.label,chansToPop)
+    
+data.cfg.channel = setdiff(1:64, find(chans));
+ft_databrowser(data.cfg,data)
     %%
     % ARTIFACT IDENTIFICATION
+    cfg = [];
 %     cfg.feedback  = 'yes';
     cfg.artfctdef.reject = 'complete';
 %     % Z-value rejection
@@ -128,7 +120,7 @@ Tag = 'eeglabSet';
     cfg                     = ft_definetrial(cfg);
     cfg.artfctdef.zvalue.artifact = ft_artifact_zvalue(cfg,data); %
     cfg.artfctdef.eog.artifact     = ft_artifact_eog(cfg,data);%
-    data_no_artifacts              = ft_rejectartifact(cfg,data2);
+    data_no_artifacts              = ft_rejectartifact(cfg);
     % END ARTIFACT %%
     data             = ft_preprocessing(cfg,data);
     
