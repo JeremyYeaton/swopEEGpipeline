@@ -149,16 +149,18 @@ for sub = 2%1:length(subs)
 end
 ft_databrowser(data.cfg,data)
 %%
-load([rmvArtfct,'\\',subID,'_',rmvArtfct,'.mat'],'data');
+dataAll = ft_timelockanalysis(data.cfg,data)
 %%
 cfg = dataAll.cfg;
-cfg.trials = find(ismember(dataAll.cfg.trl(:,4),can));
-dataCan = ft_timelockanalysis(cfg,dataAll);
+cfg.trials = can;
+dataCan = ft_timelockanalysis(cfg,data)
 
 cfg = dataAll.cfg;
-cfg.trials = find(ismember(dataAll.cfg.trl(:,4),vio));
-dataVio = ft_timelockanalysis(cfg,data);
-
+cfg.trials = vio;
+dataVio = ft_timelockanalysis(cfg,data)
+%%
+canTrials = find(ismember(dataAll.cfg.trl(:,4),can))
+vioTrials = 
 %% Automatic artifact rejection
 sub = 1;
 subID = subs{sub};
