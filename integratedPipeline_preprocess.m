@@ -1,71 +1,42 @@
-%% Settings
-% Pilot data directory
+%% Import settings from file
 mainDir      = 'C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP';
-% mainDir      = 'C:\\Users\\jdyea\\OneDrive\\MoDyCo\\SWOP\\dataFromSweden';
-cd(mainDir);
-addpath('swopEEGpipeline')
-prepFolder   = 'ft_preprocess';
-visRejFolder = 'ft_visRej';
-icaFolder    = 'ft_icaComponents';
-rmvArtfct    = 'ft_rmvArtfct';
-LPF          = 40; % Hz
-HPF          = .5; % Hz
-zCutoff      = 4;
+cd(mainDir); addpath('swopEEGpipeline')
 
-origin = 'sw'; % 'sw' for Humlab, 'fr' for MoDyCo
-
-pilotSubs = {'s_500mk','s_501ml'};
-% Swedish sub IDs
-swedSubs = {'s_04nm','s_07ba','s_09lo','s_12wg','s_13ff','s_14mc','s_15rj','s_17oh','s_18ak',...
-    's_19am','s_21ma','s_23nj','s_24zk','s_25ks','s_26nm','s_27lm','s_28js','s_29ld','s_30la','s_31bf'};
-
-if strcmp(origin,'fr') == 1
-    % MoDyCo data settings
-    elecLayout   = 'biosemi64.lay';
-    eeglabTag    = 'eeglabSet';
-    subs         = pilotSubs;
-elseif strcmp(origin,'sw') == 1
-    % Humlab data settings
-    elecLayout   = 'easycapM22.mat';
-    eeglabTag    = 'bandpass_05to100';
-    subs         = swedSubs;
-end
-
-% Trial types
-can = [212,214,222,224,231,232,233,234,241,242,243,244]; % canonical
-vio = [112,114,122,124,131,132,133,134,141,142,143,144]; % violation
+% Indicate origin for data-specific parameters
+origin = 'fr'; % 'sw' for Humlab, 'fr' for MoDyCo
+swopSettings
 %% Import; epoch; filter; separate & mean EOGs
 tic
-for sub = 1:length(subs)
+currSub = 16;
+currSub = 2;
+for sub = currSub:length(subs)
     subID            = subs{sub};
-    EEGLABFILE       = [prepFolder,'\\',subID,'_',eeglabTag,'.set'];
-    if strcmp(origin,'fr') == 1
-        EEG              = pop_biosig([mainDir,'\\raw_data\\',subID,'\\',subID,'.bdf'],...
-            'channels',1:70,'ref',[65 66] ,'refoptions',{'keepref' 'on'});
-        %     EEG              = pop_rejchan(EEG, 'elec',1:70 ,'threshold',3,'norm','on','measure','kurt');
-        EEG              = eeg_checkset( EEG );
-        EEG              = pop_saveset( EEG, 'filename',[subID,'_',eeglabTag,'.set'],'filepath',[mainDir,'\\',EEGLABFILE]);
-    end
+    EEGLABFILE       = [folders.prep,'\\',subID,'_',folders.eeglabTag,'.set'];
+%     if strcmp(origin,'fr') == 1
+%         EEG              = pop_biosig([mainDir,'\\raw_data\\',subID,'\\',subID,'.bdf'],...
+%             'channels',1:70,'ref',[65 66] ,'refoptions',{'keepref' 'on'});
+%         %     EEG              = pop_rejchan(EEG, 'elec',1:70 ,'threshold',3,'norm','on','measure','kurt');
+%         EEG              = eeg_checkset( EEG );
+%         EEG              = pop_saveset( EEG, 'filename',[subID,'_',folders.eeglabTag,'.set'],'filepath',[mainDir,'\\',EEGLABFILE]);
+%     end
     cfg                     = [];
     cfg.dataset             = EEGLABFILE;
     % Preprocessing parameters
     cfg.method              = 'trial';
-    cfg.preproc.lpfilter    = 'yes'; cfg.preproc.lpfreq = LPF;
-    cfg.preproc.hpfilter    = 'yes'; cfg.preproc.hpfreq = HPF;
-    cfg.preproc.demean      = 'yes';
-%     cfg.lpfilter            = 'yes'; cfg.lpfreq = LPF;
-%     cfg.hpfilter            = 'yes'; cfg.hpfreq = HPF;
-%     cfg.demean              = 'yes';
+%     cfg.preproc.lpfilter    = 'yes'; cfg.preproc.lpfreq = LPF;
+%     cfg.preproc.hpfilter    = 'yes'; cfg.preproc.hpfreq = HPF;
+%     cfg.preproc.demean      = 'yes';
+    cfg.preproc             = preproc;
     cfg.baselinewindow      = [-0.1 0];
     cfg.continuous          = 'yes';
     cfg.blocksize           = 15;
     cfg.layout              = elecLayout;
-    cfg.trialdef.eventtype  = 'trigger';
-%     cfg.trialdef.eventvalue = 112;
-    cfg.trialdef.eventvalue = [can vio];
-    cfg.trialdef.prestim    = .1;
-    cfg.trialdef.poststim   = 1;
-%     cfg.trialfun            = trialFunc;
+    cfg.trialdef            = trialdef;
+%     cfg.trialdef.eventtype  = 'trigger';
+% %     cfg.trialdef.eventvalue = 112;
+%     cfg.trialdef.eventvalue = [can vio];
+%     cfg.trialdef.prestim    = .1;
+%     cfg.trialdef.poststim   = 1;
     cfg.trialfun = 'ft_trialfun_swop';
     cfg                     = ft_definetrial(cfg);
     data                    = ft_preprocessing(cfg);
@@ -96,21 +67,23 @@ for sub = 1:length(subs)
         cfg                     = data.cfg;
         cfg.channel             = setdiff(1:64, 65:70);
         data                    = ft_selectdata(cfg, data);
-        data.cfg.trl % data1
+        data.cfg.trl
         % append the EOGH and EOGV channel to the EEG channels
         cfg = data.cfg;
         data                    = ft_appenddata(cfg, data, eogv, eogh);
         data.cfg.channel        = data.label;
     end
-%     save([prepFolder,'\\',subID,'_',prepFolder,'.mat'],'data')
+    disp(['Saving file ',subID,' (',num2str(sub),')...']);
+    save([folders.prep,'\\',subID,'_',folders.prep,'.mat'],'data')
     clear cfg data
     toc
 end
 waitbar(1,'Done! Now do visual rejection!');
 %% Visual rejection (Summary, channel, or trial)
-for sub = 1%1:length(subs)
+for sub = 1:length(subs)
     subID                = subs{sub};
-    load([prepFolder,'\\',subID,'_',prepFolder,'.mat'],'data');
+    disp(['Loading subject ',subID,' (',num2str(sub),')...']);
+    load([folders.prep,'\\',subID,'_',folders.prep,'.mat'],'data');
     cfg                  = data.cfg;
     cfg.artfctdef.reject = 'complete';
     cfg.method           = 'summary';
@@ -121,36 +94,46 @@ for sub = 1%1:length(subs)
         data                 = ft_rejectvisual(cfg,data);
         rep = input('Further review necessary? [y/n]: ','s');
     end
-    disp('Saving file...');
-    save([visRejFolder,'\\',subID,'_',visRejFolder,'.mat'],'data');
+    disp(['Saving file ',subID,' (',num2str(sub),')...']);
+    save([folders.visRej,'\\',subID,'_',folders.visRej,'.mat'],'data');
 end
-
 %% ICA decomposition
-for sub = 1%1:length(subs)
+for sub = 2:length(subs)
     subID      = subs{sub};
-    load([visRejFolder,'\\',subID,'_',visRejFolder,'.mat'],'data');
-    cfg        = data.cfg;
-    cfg.method = 'runica';
-    comp       = ft_componentanalysis(cfg, data);
-    disp('Saving file...');
-    save([icaFolder,'\\',subID,'_',icaFolder,'.mat'],'data','comp');
+    saveName   = [folders.ica,'\\',subID,'_',folders.ica,'.mat'];
+    saveFile   = 'y';
+    if isfile(saveName)
+        saveFile = input(['File for ',subID,' already exists. Overwrite? [y/n]'],'s');
+        if strcmp(saveFile,'n')
+            disp('File not saved. ICA decomp already exists.');
+        end
+    end
+    if strcmp(saveFile,'y')
+        disp(['Loading subject ',subID,' (',num2str(sub),')...']);
+        load([folders.visRej,'\\',subID,'_',folders.visRej,'.mat'],'data');
+        cfg        = data.cfg;
+        cfg.method = 'runica';
+        comp       = ft_componentanalysis(cfg, data);
+        disp(['Saving file ',subID,' (',num2str(sub),')...']);
+        save(saveName,'data','comp');
+    end
 end
 waitbar(1,'Done! Now do component rejection!');
 %% Component rejection
-for sub = 1%1:length(subs)
+for sub = 1%:length(subs)
     subID      = subs{sub};
-    load([icaFolder,'\\',subID,'_',icaFolder,'.mat'],'data','comp');
+    disp(['Loading subject ',subID,' (',num2str(sub),')...']);
+    load([folders.ica,'\\',subID,'_',folders.ica,'.mat'],'data','comp');
     cfg = [];
+    cfg.trl = data.cfg.trl;
     cfg.layout = 'biosemi64.lay';
     cfg.component = 1:20;
     cfg.comment = 'no';
     cfg.viewmode = 'component';
     figure; ft_topoplotIC(cfg, comp)
     ft_databrowser(cfg, comp)
-%     artComp = [1,3,4,5,6,7,8,9,10,12,14]; % sub 2
-    artComp = [1 2 3 4 5 6 8 10 12 14 16 20]; % sub 1
-%     artComp = input('Enter components for removal separated by spaces: ','s');
-%     artComp = sscanf(artComp,'%f')';
+    artComp = input('Enter components for removal separated by spaces: ','s');
+    artComp = sscanf(artComp,'%f')';
     cfg.component = artComp;
     data = ft_rejectcomponent(cfg, comp, data);
 %     % Automatic EOG rejection
@@ -166,43 +149,58 @@ for sub = 1%1:length(subs)
 %     % cfg.artfctdef.zvalue.channel       = 1:64;
 %     % [cfg, data.cfg.artfctdef.zvalue.artifact]          = ft_artifact_zvalue(cfg,data);
 %     data_no_artifacts              = ft_rejectartifact(data.cfg,data);
-    disp('Saving file...');
-    save([rmvArtfct,'\\',subID,'_',rmvArtfct,'.mat'],'data');
+    disp(['Saving file ',subID,' (',num2str(sub),')...']);
+    save([folders.rmvArtfct,'\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
+    close all
 end
+waitbar(1,'Done! Now do time lock analysis!');
 data.cfg.viewmode = 'vertical';
 %% Mean and store data
 for sub = 1%:length(subs)
     subID = subs{sub};
-    disp(['Loading subject ',subID,'...']);
-    load([rmvArtfct,'\\',subID,'_',rmvArtfct,'.mat'],'data');
-    try
-        trls = data.cfg.trl;
-    catch
-        trls = data.cfg.previous{1,1}.trl;
-    end
+    disp(['Loading subject ',subID,' (',num2str(sub),')...']);
+    load([folders.rmvArtfct,'\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
     disp('Averaging over Canonical trials...');
     cfg = data.cfg;
-    cfg.trials = find(ismember(data.cfg.trl(:,4),can));
+    cfg.trials = find(ismember(data.cfg.trl(:,4),trials.can));
     dataCan = ft_timelockanalysis(cfg,data);
     disp('Averaging over Violation trials...');
     cfg = data.cfg;
-    cfg.trials = find(ismember(data.cfg.trl(:,4),vio));
+    cfg.trials = find(ismember(data.cfg.trl(:,4),trials.vio));
     dataVio = ft_timelockanalysis(cfg,data);
     disp('Computing difference between conditions...');
     cfg = data.cfg;
     cfg.operation = 'subtract';
     cfg.parameter = 'avg';
     difference = ft_math(cfg, dataCan, dataVio);
+    disp(['Saving file ',subID,' (',num2str(sub),')...']);
+    save([folders.timelock,'\\',subID,'_',folders.timelock,'.mat'],...
+        'data','dataCan','dataVio','difference');
+%     clear cfg data dataCan dataVio
+end
+waitbar(1,'Done! Now do grand averaging!');
+%% Store in struct array and compare
+for sub = 1:length(subs)
+    subID = subs{sub};
+    disp(['Loading subject ',subID,' (',num2str(sub),')...']);
+    load([folders.timelock,'\\',subID,'_',folders.timelock,'.mat'],'data');
     cfg.interactive = 'yes';
     cfg.showoutline = 'yes';
     disp('Storing data in struct...');
     dataStruc.participant{sub} = subID;
-    dataStruc.data{sub} = data;
+%     dataStruc.data{sub} = data;
     dataStruc.Vio{sub} = dataVio;
     dataStruc.Can{sub}= dataCan;
     dataStruc.Diff{sub} = difference;
 end
+
+
+
+
+
+
 %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 cfg = data.cfg;
 cfg.interactive = 'yes';
 cfg.showoutline = 'yes';

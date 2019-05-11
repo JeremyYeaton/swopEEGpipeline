@@ -151,8 +151,7 @@ end
 % select all events with the specified value
 if isfield(cfg.trialdef, 'eventvalue') && ~isempty(cfg.trialdef.eventvalue)
   for i=1:numel(event)
-%       sel(i) = sel(i) && event(i).value, cfg.trialdef.eventvalue) && event(i+1).value == 11;
-    sel(i) = sel(i) && ismatch(event(i).value, cfg.trialdef.eventvalue) && event(i+1).value == 11;
+    sel(i) = sel(i) && ismatch(event(i).value, cfg.trialdef.eventvalue) && event(i+1).value == 11; %%%%% add subfunction for extra conditions
   end
 end
 
