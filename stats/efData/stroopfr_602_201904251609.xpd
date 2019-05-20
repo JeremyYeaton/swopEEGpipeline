@@ -1,0 +1,206 @@
+#Expyriment 0.9.0 (Python 3.7.1), .xpd-file, coding: cp1252
+#date: Thu Apr 25 2019 16:09:19
+#--EXPERIMENT INFO
+#e mainfile: stroopfr.py
+#e sha1: None
+#e modules: 
+#e Experiment: Stroop French
+#e no between subject factors
+#e Block 0: IntroRect
+#e     block factors: 
+#e     n trials: 3
+#e     trial factors: 
+#e Block 1: 0 Practice
+#e     block factors: 
+#e     n trials: 5
+#e     trial factors: Type = [rect]
+#e                    Color = [g, r, y]
+#e                    Text = [NA]
+#e                    Letter = [100, 102, 107]
+#e                    
+#e Block 2: 0
+#e     block factors: 
+#e     n trials: 12
+#e     trial factors: Type = [rect]
+#e                    Color = [b, g, r, y]
+#e                    Text = [NA]
+#e                    Letter = [100, 102, 106, 107]
+#e                    
+#e Block 3: IntroBW
+#e     block factors: 
+#e     n trials: 3
+#e     trial factors: 
+#e Block 4: 1 Practice
+#e     block factors: 
+#e     n trials: 5
+#e     trial factors: Type = [bw]
+#e                    Color = [NA]
+#e                    Text = [b, g, r, y]
+#e                    Letter = [100, 102, 106, 107]
+#e                    
+#e Block 5: 1
+#e     block factors: 
+#e     n trials: 12
+#e     trial factors: Type = [bw]
+#e                    Color = [NA]
+#e                    Text = [b, g, r, y]
+#e                    Letter = [100, 102, 106, 107]
+#e                    
+#e Block 6: IntroClr
+#e     block factors: 
+#e     n trials: 3
+#e     trial factors: 
+#e Block 7: 2 Practice
+#e     block factors: 
+#e     n trials: 5
+#e     trial factors: Type = [cong, incong, neut]
+#e                    Color = [b, g, r, y]
+#e                    Text = [b, g, n, y]
+#e                    Letter = [100, 102, 106, 107]
+#e                    
+#e Block 8: 2
+#e     block factors: 
+#e     n trials: 96
+#e     trial factors: Type = [cong, incong, neut]
+#e                    Color = [b, g, r, y]
+#e                    Text = [b, g, m, n, p, r, t, y]
+#e                    Letter = [100, 102, 106, 107]
+#e                    
+#--SUBJECT INFO
+#s id: 602
+subject_id,Block,Trial,Type,Color,Text,Letter,Key,RT
+602,0 Practice,0,rect,r,NA,107,None,None
+602,0 Practice,1,rect,y,NA,100,100,969
+602,0 Practice,2,rect,g,NA,102,102,936
+602,0 Practice,3,rect,y,NA,100,100,853
+602,0 Practice,4,rect,y,NA,100,100,594
+602,0,0,rect,y,NA,100,100,970
+602,0,1,rect,r,NA,107,107,594
+602,0,2,rect,g,NA,102,102,1231
+602,0,3,rect,b,NA,106,None,None
+602,0,4,rect,g,NA,102,102,691
+602,0,5,rect,y,NA,100,100,656
+602,0,6,rect,r,NA,107,107,475
+602,0,7,rect,b,NA,106,106,431
+602,0,8,rect,b,NA,106,106,608
+602,0,9,rect,r,NA,107,107,445
+602,0,10,rect,g,NA,102,100,448
+602,0,11,rect,y,NA,100,100,499
+602,1 Practice,0,bw,NA,y,100,100,871
+602,1 Practice,1,bw,NA,b,106,107,761
+602,1 Practice,2,bw,NA,g,102,102,607
+602,1 Practice,3,bw,NA,g,102,102,514
+602,1 Practice,4,bw,NA,r,107,None,None
+602,1,0,bw,NA,r,107,None,None
+602,1,1,bw,NA,b,106,106,665
+602,1,2,bw,NA,g,102,102,624
+602,1,3,bw,NA,y,100,100,458
+602,1,4,bw,NA,y,100,100,503
+602,1,5,bw,NA,r,107,107,670
+602,1,6,bw,NA,b,106,106,594
+602,1,7,bw,NA,g,102,102,628
+602,1,8,bw,NA,y,100,100,592
+602,1,9,bw,NA,b,106,106,1035
+602,1,10,bw,NA,g,102,102,699
+602,1,11,bw,NA,r,107,107,514
+602,2 Practice,0,incong,b,y,106,106,989
+602,2 Practice,1,cong,g,g,102,102,576
+602,2 Practice,2,incong,y,b,100,106,689
+602,2 Practice,3,neut,r,n,107,107,564
+602,2 Practice,4,incong,y,g,100,100,726
+602,2,0,neut,g,m,102,102,752
+602,2,1,incong,y,r,100,102,883
+602,2,2,neut,b,t,106,106,592
+602,2,3,incong,b,y,106,106,573
+602,2,4,neut,g,n,102,102,707
+602,2,5,incong,r,g,107,107,721
+602,2,6,incong,r,b,107,107,643
+602,2,7,incong,r,y,107,107,965
+602,2,8,incong,y,b,100,100,1192
+602,2,9,neut,y,m,100,100,674
+602,2,10,neut,g,p,102,102,600
+602,2,11,neut,b,m,106,106,759
+602,2,12,neut,y,n,100,100,748
+602,2,13,incong,g,r,102,102,784
+602,2,14,neut,r,p,107,107,750
+602,2,15,neut,y,t,100,100,638
+602,2,16,incong,b,r,106,106,552
+602,2,17,cong,y,y,100,100,820
+602,2,18,incong,b,g,106,106,647
+602,2,19,neut,r,t,107,107,500
+602,2,20,incong,g,y,102,102,639
+602,2,21,neut,g,t,102,102,594
+602,2,22,incong,y,g,100,100,562
+602,2,23,neut,y,p,100,100,450
+602,2,24,cong,r,r,107,107,693
+602,2,25,cong,g,g,102,102,678
+602,2,26,neut,r,m,107,107,635
+602,2,27,cong,b,b,106,106,541
+602,2,28,neut,b,p,106,106,600
+602,2,29,neut,r,n,107,107,512
+602,2,30,incong,g,b,102,102,650
+602,2,31,neut,b,n,106,106,570
+602,2,32,neut,r,t,107,107,480
+602,2,33,neut,r,p,107,107,478
+602,2,34,neut,g,p,102,102,720
+602,2,35,incong,g,r,102,102,340
+602,2,36,neut,b,n,106,106,589
+602,2,37,incong,y,r,100,102,483
+602,2,38,incong,r,y,107,106,482
+602,2,39,neut,r,n,107,107,1127
+602,2,40,incong,y,g,100,100,835
+602,2,41,incong,g,b,102,102,795
+602,2,42,neut,g,n,102,102,506
+602,2,43,cong,g,g,102,102,480
+602,2,44,neut,b,p,106,106,549
+602,2,45,incong,y,b,100,100,756
+602,2,46,neut,y,n,100,100,478
+602,2,47,cong,b,b,106,106,571
+602,2,48,incong,g,y,102,102,858
+602,2,49,neut,g,m,102,102,533
+602,2,50,incong,r,b,107,107,492
+602,2,51,neut,b,t,106,106,584
+602,2,52,neut,y,t,100,100,457
+602,2,53,cong,r,r,107,107,431
+602,2,54,incong,r,g,107,107,436
+602,2,55,neut,b,m,106,106,583
+602,2,56,incong,b,g,106,106,472
+602,2,57,cong,y,y,100,102,839
+602,2,58,neut,y,m,100,100,505
+602,2,59,neut,y,p,100,100,413
+602,2,60,incong,b,r,106,106,523
+602,2,61,incong,b,y,106,106,521
+602,2,62,neut,r,m,107,107,438
+602,2,63,neut,g,t,102,102,719
+602,2,64,neut,g,t,102,102,622
+602,2,65,incong,y,b,100,100,632
+602,2,66,incong,y,r,100,100,663
+602,2,67,neut,r,p,107,107,482
+602,2,68,neut,g,m,102,102,582
+602,2,69,cong,r,r,107,107,498
+602,2,70,neut,b,p,106,106,693
+602,2,71,cong,b,b,106,106,526
+602,2,72,incong,b,r,106,106,354
+602,2,73,neut,b,t,106,106,316
+602,2,74,neut,r,n,107,107,421
+602,2,75,neut,y,t,100,100,874
+602,2,76,neut,b,m,106,106,514
+602,2,77,incong,b,y,106,106,470
+602,2,78,neut,r,t,107,107,456
+602,2,79,neut,y,p,100,100,795
+602,2,80,incong,r,g,107,107,714
+602,2,81,neut,y,n,100,100,602
+602,2,82,incong,g,r,102,102,545
+602,2,83,neut,r,m,107,106,419
+602,2,84,incong,y,g,100,102,685
+602,2,85,neut,g,n,102,102,653
+602,2,86,cong,y,y,100,100,561
+602,2,87,incong,g,b,102,102,1113
+602,2,88,incong,r,b,107,107,492
+602,2,89,incong,g,y,102,None,None
+602,2,90,incong,r,y,107,107,581
+602,2,91,neut,b,n,106,106,619
+602,2,92,incong,b,g,106,106,623
+602,2,93,cong,g,g,102,102,699
+602,2,94,neut,g,p,102,106,458
+602,2,95,neut,y,m,100,100,519

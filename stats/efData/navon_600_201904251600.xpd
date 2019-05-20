@@ -1,0 +1,170 @@
+#Expyriment 0.9.0 (Python 3.7.1), .xpd-file, coding: cp1252
+#date: Thu Apr 25 2019 16:00:48
+#--EXPERIMENT INFO
+#e mainfile: navon.py
+#e sha1: None
+#e modules: 
+#e Experiment: Navon
+#e no between subject factors
+#e Block 0: introGlobLoc
+#e     block factors: 
+#e     n trials: 2
+#e     trial factors: 
+#e Block 1: gbLc
+#e     block factors: 
+#e     n trials: 5
+#e     trial factors: Type = [HA, LH, LL, SH, SS]
+#e                    Global = [H, L, S]
+#e                    Local = [A, H, L, S]
+#e                    Targets = [LAA]
+#e                    repCorr = [102, 106]
+#e                    
+#e Block 2: gbLc
+#e     block factors: 
+#e     n trials: 25
+#e     trial factors: Type = [AA, AH, AL, AO, AS, HA, HH, HL, HO, HS, LA, LH, LL, LO, LS, OA, OH, OL, OO, OS, SA, SH, SL, SO, SS]
+#e                    Global = [A, H, L, O, S]
+#e                    Local = [A, H, L, O, S]
+#e                    Targets = [LAA]
+#e                    repCorr = [102, 106]
+#e                    
+#e Block 3: introGlob
+#e     block factors: 
+#e     n trials: 2
+#e     trial factors: 
+#e Block 4: glob
+#e     block factors: 
+#e     n trials: 5
+#e     trial factors: Type = [AS, HH, HO, LL, SA]
+#e                    Global = [A, H, L, S]
+#e                    Local = [A, H, L, O, S]
+#e                    Targets = [LAA]
+#e                    repCorr = [102, 106]
+#e                    
+#e Block 5: glob
+#e     block factors: 
+#e     n trials: 25
+#e     trial factors: Type = [AA, AH, AL, AO, AS, HA, HH, HL, HO, HS, LA, LH, LL, LO, LS, OA, OH, OL, OO, OS, SA, SH, SL, SO, SS]
+#e                    Global = [A, H, L, O, S]
+#e                    Local = [A, H, L, O, S]
+#e                    Targets = [LAA]
+#e                    repCorr = [102, 106]
+#e                    
+#e Block 6: introLoc
+#e     block factors: 
+#e     n trials: 2
+#e     trial factors: 
+#e Block 7: loca
+#e     block factors: 
+#e     n trials: 5
+#e     trial factors: Type = [AA, AL, HH, OL, OO]
+#e                    Global = [A, H, O]
+#e                    Local = [A, H, L, O]
+#e                    Targets = [LAA]
+#e                    repCorr = [102, 106]
+#e                    
+#e Block 8: loca
+#e     block factors: 
+#e     n trials: 25
+#e     trial factors: Type = [AA, AH, AL, AO, AS, HA, HH, HL, HO, HS, LA, LH, LL, LO, LS, OA, OH, OL, OO, OS, SA, SH, SL, SO, SS]
+#e                    Global = [A, H, L, O, S]
+#e                    Local = [A, H, L, O, S]
+#e                    Targets = [LAA]
+#e                    repCorr = [102, 106]
+#e                    
+#--SUBJECT INFO
+#s id: 600
+subject_id,Block,Trial,Type,Global,Local,Targets,repCorr,Key,RT
+600,gbLc,0,LL,L,L,LAA,102,102,467
+600,gbLc,1,HA,H,A,LAA,102,102,267
+600,gbLc,2,SH,S,H,LAA,106,106,901
+600,gbLc,3,SS,S,S,LAA,106,106,492
+600,gbLc,4,LH,L,H,LAA,102,102,495
+600,gbLc,0,OS,O,S,LAA,106,106,451
+600,gbLc,1,AS,A,S,LAA,102,102,588
+600,gbLc,2,SL,S,L,LAA,102,106,423
+600,gbLc,3,AA,A,A,LAA,102,102,481
+600,gbLc,4,HH,H,H,LAA,106,106,557
+600,gbLc,5,LO,L,O,LAA,102,102,316
+600,gbLc,6,OL,O,L,LAA,102,106,328
+600,gbLc,7,HS,H,S,LAA,106,106,548
+600,gbLc,8,LL,L,L,LAA,102,102,192
+600,gbLc,9,SO,S,O,LAA,106,106,308
+600,gbLc,10,AO,A,O,LAA,102,102,196
+600,gbLc,11,AH,A,H,LAA,102,102,258
+600,gbLc,12,HO,H,O,LAA,106,106,327
+600,gbLc,13,LA,L,A,LAA,102,102,120
+600,gbLc,14,OO,O,O,LAA,106,106,237
+600,gbLc,15,LH,L,H,LAA,102,102,218
+600,gbLc,16,SH,S,H,LAA,106,106,256
+600,gbLc,17,AL,A,L,LAA,102,102,376
+600,gbLc,18,OA,O,A,LAA,102,102,364
+600,gbLc,19,HL,H,L,LAA,102,102,358
+600,gbLc,20,SS,S,S,LAA,106,106,170
+600,gbLc,21,SA,S,A,LAA,102,102,588
+600,gbLc,22,LS,L,S,LAA,102,102,369
+600,gbLc,23,HA,H,A,LAA,102,102,361
+600,gbLc,24,OH,O,H,LAA,106,106,400
+600,glob,0,LL,L,L,LAA,102,102,212
+600,glob,1,SA,S,A,LAA,106,106,254
+600,glob,2,AS,A,S,LAA,102,106,284
+600,glob,0,LL,L,L,LAA,102,102,606
+600,glob,1,SA,S,A,LAA,106,106,634
+600,glob,2,AS,A,S,LAA,102,102,637
+600,glob,3,HH,H,H,LAA,106,106,445
+600,glob,4,HO,H,O,LAA,106,106,162
+600,glob,0,HS,H,S,LAA,106,106,303
+600,glob,1,LL,L,L,LAA,102,102,230
+600,glob,2,LA,L,A,LAA,102,102,134
+600,glob,3,LO,L,O,LAA,102,102,189
+600,glob,4,HA,H,A,LAA,106,106,246
+600,glob,5,HL,H,L,LAA,106,106,202
+600,glob,6,HO,H,O,LAA,106,106,122
+600,glob,7,OO,O,O,LAA,106,106,172
+600,glob,8,OL,O,L,LAA,106,106,179
+600,glob,9,AA,A,A,LAA,102,102,443
+600,glob,10,AH,A,H,LAA,102,102,239
+600,glob,11,AS,A,S,LAA,102,102,150
+600,glob,12,SO,S,O,LAA,106,106,247
+600,glob,13,OA,O,A,LAA,106,106,280
+600,glob,14,OH,O,H,LAA,106,106,136
+600,glob,15,HH,H,H,LAA,106,106,248
+600,glob,16,AL,A,L,LAA,102,102,251
+600,glob,17,SL,S,L,LAA,106,106,212
+600,glob,18,SH,S,H,LAA,106,106,167
+600,glob,19,OS,O,S,LAA,106,106,162
+600,glob,20,LH,L,H,LAA,102,102,159
+600,glob,21,SA,S,A,LAA,106,106,194
+600,glob,22,LS,L,S,LAA,102,102,240
+600,glob,23,SS,S,S,LAA,106,106,139
+600,glob,24,AO,A,O,LAA,102,102,341
+600,loca,0,OL,O,L,LAA,102,102,228
+600,loca,1,HH,H,H,LAA,106,106,230
+600,loca,2,AA,A,A,LAA,102,102,191
+600,loca,3,AL,A,L,LAA,102,102,165
+600,loca,4,OO,O,O,LAA,106,106,134
+600,loca,0,HA,H,A,LAA,102,102,258
+600,loca,1,AO,A,O,LAA,106,106,173
+600,loca,2,LS,L,S,LAA,106,106,277
+600,loca,3,HO,H,O,LAA,106,106,183
+600,loca,4,HS,H,S,LAA,106,106,140
+600,loca,5,SL,S,L,LAA,102,102,171
+600,loca,6,AH,A,H,LAA,106,106,147
+600,loca,7,LL,L,L,LAA,102,102,238
+600,loca,8,AA,A,A,LAA,102,102,260
+600,loca,9,OL,O,L,LAA,102,102,196
+600,loca,10,OS,O,S,LAA,106,106,159
+600,loca,11,SO,S,O,LAA,106,106,151
+600,loca,12,LH,L,H,LAA,106,106,335
+600,loca,13,SA,S,A,LAA,102,102,260
+600,loca,14,OA,O,A,LAA,102,102,148
+600,loca,15,SS,S,S,LAA,106,106,170
+600,loca,16,AL,A,L,LAA,102,102,234
+600,loca,17,HH,H,H,LAA,106,106,248
+600,loca,18,OO,O,O,LAA,106,106,140
+600,loca,19,LA,L,A,LAA,102,102,281
+600,loca,20,HL,H,L,LAA,102,102,252
+600,loca,21,SH,S,H,LAA,106,106,157
+600,loca,22,AS,A,S,LAA,106,106,162
+600,loca,23,OH,O,H,LAA,106,106,156
+600,loca,24,LO,L,O,LAA,106,106,304
