@@ -7,9 +7,8 @@ origin = 'fr'; % 'sw' for Humlab, 'fr' for MoDyCo
 swopSettings
 %% Import; epoch; filter; separate & mean EOGs
 tic
-% currSub = 16;
-% currSub = 2;
-for sub = 2%currSub:length(subs)
+currSub = 3;
+for sub = currSub:length(subs)
     subID            = subs{sub};
     EEGLABFILE       = [folders.prep,'\\',subID,'_',folders.eeglabTag,'.set'];
     if strcmp(origin,'fr') && ~isfile(EEGLABFILE)
@@ -28,7 +27,7 @@ for sub = 2%currSub:length(subs)
 %     cfg.trl                 = cfg.trl(a,:);
     data                    = ft_preprocessing(cfg);
     % Only separate and recombine EOG for French data
-    if strcmp(origin,'fr') == 1 
+    if strcmp(origin,'fr')
         % HEOG
         cfg                     = data.cfg;
         cfg.channel             = {'HEOG1','HEOG2'};%{'EXG3' 'EXG4'};
@@ -68,13 +67,11 @@ for sub = 2%currSub:length(subs)
         % append the Mast EOGH and EOGV channel to the EEG channels
         cfg                     = data.cfg;
         data                    = ft_appenddata(cfg, data, eogv, eogh, mast);
-%         cfg.preproc.refchannel  = 'M';
         cfg.reref               = 'yes';
         cfg.refchannel          = 'M';
         cfg.demean              = 'yes';
         data.cfg.channel        = data.label;
     end
-%     fileName = [folders.prep,'\\',subID,'_',folders.prep,'_raw.mat'];
     fileName = [folders.prep,'\\',subID,'_',folders.prep,'.mat'];
     disp(['Saving ',fileName,' (',num2str(sub),')...']);
     save(fileName,'data')
@@ -83,7 +80,7 @@ for sub = 2%currSub:length(subs)
 end
 waitbar(1,'Done! Now do visual rejection!');
 %% Visual rejection (Summary, channel, or trial)
-for sub = 1%1:length(subs)
+for sub = 1:length(subs)
     subID                = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     load([folders.prep,'\\',subID,'_',folders.prep,'.mat'],'data');
@@ -102,7 +99,7 @@ for sub = 1%1:length(subs)
         rep = input('Further review necessary? [y/n]: ','s');
     end
     disp(['Saving file ',subID,' (',num2str(sub),')...']);
-    save([folders.visRej,'\\',subID,'_',folders.visRej,'.mat'],'data');
+%     save([folders.visRej,'\\',subID,'_',folders.visRej,'.mat'],'data');
 end
 %% ICA decomposition
 for sub = 1:length(subs)
@@ -158,17 +155,33 @@ for sub = 1:length(subs)
 %     % [cfg, data.cfg.artfctdef.zvalue.artifact]          = ft_artifact_zvalue(cfg,data);
 %     data_no_artifacts              = ft_rejectartifact(data.cfg,data);
     disp(['Saving file ',subID,' (',num2str(sub),')...']);
-    save([folders.rmvArtfct,'\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
+%     save([folders.rmvArtfct,'\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
     close all
 end
 waitbar(1,'Done! Now do time lock analysis!');
+%% Interpolate missing electrodes
+cfg = data.cfg;
+cfg.method = 'template';
+cfg.feedback = 'no';
+neighbors = ft_prepare_neighbours(cfg,data);
+%%
+cfg = data.cfg;
+cfg.method = 'average';
+cfg.missingchannel = setdiff(allElecs.label,data.label);
+cfg.neighbours = neighbors; 
+interp = ft_channelrepair(cfg,data);
+
 %% Mean and store data
-for sub = 2:length(subs)
+for sub = 1:length(subs)
     subID = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     load([folders.rmvArtfct,'\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
+    data.cfg          = rmfield(data.cfg,'previous');
     data.cfg.viewmode = 'butterfly';
-    data.cfg.method   = 'trial';
+    data.cfg.method   = 'summary';
+    data.cfg.reref    = 'yes';
+    data.cfg.refchannel = {'M1' 'M2'};
+    data              = ft_rejectvisual(data.cfg,data);
     disp('Averaging over Canonical trials...');
     cfg           = data.cfg;
     cfg.trials    = find(ismember(data.trialinfo,trials.can));
@@ -182,6 +195,7 @@ for sub = 2:length(subs)
     cfg.operation = 'subtract';
     cfg.parameter = 'avg';
     difference    = ft_math(cfg, dataVio, dataCan);
+    difference.cfg= rmfield(difference.cfg,'previous');
     disp(['Saving data file ',subID,' (',num2str(sub),')...']);
     save([folders.timelock,'\\',subID,'_',folders.timelock,'_data.mat'],'dataCan','dataVio');
     clear data dataCan dataVio
@@ -197,6 +211,7 @@ for sub = 1:length(subs)
     load([folders.timelock,'\\',subID,'_',folders.timelock,'_diff.mat'],'difference');
     cfg.interactive = 'yes';
     cfg.showoutline = 'yes';
+    cfg.layout      = elecLayout;
     disp('Storing data in struct...');
     dataStruc.participant{sub} = subID;
 %     dataStruc.data{sub} = data;
@@ -206,7 +221,11 @@ for sub = 1:length(subs)
 end
 
 %%
-grandavg = ft_timelockgrandaverage(data.cfg, dataStruc.Diff{1}, dataStruc.Diff{2},...
+cfg = difference.cfg;
+cfg = rmfield(cfg,'method');
+grandavg = ft_timelockgrandaverage(cfg, dataStruc.Diff{1}, dataStruc.Diff{2})
+%%
+,...
     dataStruc.Diff{3}, dataStruc.Diff{4}, dataStruc.Diff{5}, dataStruc.Diff{6},...
     dataStruc.Diff{7}, dataStruc.Diff{8}, dataStruc.Diff{9}, dataStruc.Diff{10},...
     dataStruc.Diff{11}, dataStruc.Diff{12}, dataStruc.Diff{13}, dataStruc.Diff{14},...
@@ -222,6 +241,7 @@ grandavg = ft_timelockgrandaverage(data.cfg, dataStruc.Diff{1}, dataStruc.Diff{2
 cfg = [];
 cfg.interactive = 'yes';
 cfg.showoutline = 'yes';
+cfg.layout = elecLayout;
 ft_multiplotER(cfg, grandavg)
 %%
 cfg = data.cfg;

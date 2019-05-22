@@ -9,7 +9,7 @@ import os, csv
 os.chdir('C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP')
 #%%
 rawDir = os.path.join(os.getcwd(),'raw_data')
-subs = ['f_101mc','f_102bg']
+subs = ['f_101mc','f_102bg','f_103tn','f_104sb']
 stroop = []
 navon = []
 ajt = []
@@ -39,12 +39,12 @@ for sub in subs:
 #			g = csv.reader(f,delimiter = '\t')
 #			for line in g:
 #				print(line)
-		elif file == 'Untitled.txt':#file[:4] == 'ajt_' and file.endswith('.csv'):
-			f = open(os.path.join(rawDir,sub,file), 'r')
-			g = csv.reader(f,delimiter = '\t')
-			for Idx, line in enumerate(g):
-				if Idx == 0:
-					print(line)
+#		elif file == 'Untitled.txt':#file[:4] == 'ajt_' and file.endswith('.csv'):
+#			f = open(os.path.join(rawDir,sub,file), 'r')
+#			g = csv.reader(f,delimiter = '\t')
+#			for Idx, line in enumerate(g):
+#				if Idx == 0:
+#					print(line)
 
 #%%
 

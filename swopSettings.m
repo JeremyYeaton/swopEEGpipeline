@@ -2,6 +2,7 @@
 % Pilot data directory
 mainDir             = 'C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP';
 cd(mainDir); addpath('swopEEGpipeline')
+allElecs = readtable('biosemi64.txt');
 % Directory names
 folders             = [];
 folders.prep        = 'ft_preprocess';
@@ -33,7 +34,7 @@ trialdef.poststim   = 1;
 
 % French pilot - native swedish sub IDs
 pilotSubs = {'s_500mk','s_501ml'};
-frSubs = {'f_101mc','f_102bg'};
+frSubs = {'f_101mc','f_102bg','f_103tn','f_104sb'};
 % Swedish sub IDs
 swedSubs = {'s_04nm','s_07ba','s_09lo','s_12wg','s_13ff','s_14mc','s_15rj','s_17oh','s_18ak',...
     's_19am','s_21ma','s_23nj','s_24zk','s_25ks','s_26nm','s_27lm','s_28js','s_29ld','s_30la','s_31bf'};
