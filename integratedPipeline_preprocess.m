@@ -7,14 +7,14 @@ origin = 'fr'; % 'sw' for Humlab, 'fr' for MoDyCo
 swopSettings
 %% Import; epoch; filter; separate & mean EOGs
 tic
-currSub = 3;
-for sub = currSub:length(subs)
+currSub = 1;
+for sub = currSub:2%length(subs)
     subID            = subs{sub};
     EEGLABFILE       = [folders.prep,'\\',subID,'_',folders.eeglabTag,'.set'];
     if strcmp(origin,'fr') && ~isfile(EEGLABFILE)
         EEG              = pop_biosig([mainDir,'\\raw_data\\',subID,'\\',subID,'.bdf'],...
             'channels',1:70,'ref',[65 66] ,'refoptions',{'keepref' 'on'});
-        %     EEG              = pop_rejchan(EEG, 'elec',1:70 ,'threshold',3,'norm','on','measure','kurt');
+%         EEG              = pop_rejchan(EEG, 'elec',1:70 ,'threshold',5,'norm','on','measure','kurt');
         EEG              = eeg_checkset( EEG );
         EEG              = pop_saveset( EEG, 'filename',EEGLABFILE,'filepath',[mainDir,'\\']);
     end
@@ -69,9 +69,24 @@ for sub = currSub:length(subs)
         data                    = ft_appenddata(cfg, data, eogv, eogh, mast);
         cfg.reref               = 'yes';
         cfg.refchannel          = 'M';
+        cfg.preproc.refchannel  = 'M';
         cfg.demean              = 'yes';
         data.cfg.channel        = data.label;
     end
+    % Automatic artifact rejection
+    cfg.artfctdef                    = artfctdef;
+    [cfg, artifact_eog]              = ft_artifact_eog(cfg,data);
+    cfg.artfctdef.zvalue.cutoff      = 20;
+    [cfg, artifact_zval]             = ft_artifact_zvalue(cfg,data);
+    [cfg, artifact_jump]             = ft_artifact_jump(cfg,data);
+    [cfg, artifact_thresh]           = ft_artifact_threshold(cfg,data);
+    % Add artifacts to cfg
+    cfg.artfctdef.eog.artifact       = artifact_eog;
+    cfg.artfctdef.zvalue.artifact    = artifact_zval;
+    cfg.artfctdef.jump.artifact      = artifact_jump;
+    cfg.artfctdef.threshold.artifact = artifact_thresh;
+    % Reject artifacts and save
+    data                             = ft_rejectartifact(cfg,data);
     fileName = [folders.prep,'\\',subID,'_',folders.prep,'.mat'];
     disp(['Saving ',fileName,' (',num2str(sub),')...']);
     save(fileName,'data')
@@ -80,13 +95,16 @@ for sub = currSub:length(subs)
 end
 waitbar(1,'Done! Now do visual rejection!');
 %% Visual rejection (Summary, channel, or trial)
-for sub = 1:length(subs)
+for sub = 2%:length(subs)
     subID                = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     load([folders.prep,'\\',subID,'_',folders.prep,'.mat'],'data');
+    % Visual inspection
     cfg                  = data.cfg;
-    cfg.artfctdef.reject = 'complete';
+    cfg.channel          = 'all';
     cfg.method           = 'summary';
+    cfg.layout           = elecLayout;
+    cfg.keepchannel      = 'no';
     data                 = ft_rejectvisual(cfg,data);
     rep = input('Further review necessary? [y/n]: ','s');
     while ~strcmp(rep,'n')
@@ -98,26 +116,38 @@ for sub = 1:length(subs)
         data             = ft_rejectvisual(cfg,data);
         rep = input('Further review necessary? [y/n]: ','s');
     end
+    cfg.method           = 'average';
+    cfg.missingchannel   = setdiff(allElecs.label,data.label);
+    cfg.feedback         = 'no';
+    if ~isempty(cfg.missingchannel)
+        disp('Interpolating missing electrodes:');
+        for chan = cfg.missingchannel
+            disp(chan);
+        end
+        data            = ft_channelrepair(cfg,data);
+    end
     disp(['Saving file ',subID,' (',num2str(sub),')...']);
-%     save([folders.visRej,'\\',subID,'_',folders.visRej,'.mat'],'data');
+    save([folders.visRej,'\\',subID,'_',folders.visRej,'.mat'],'data');
 end
+waitbar(1,'Done! Now do ICA decomposition!');
 %% ICA decomposition
-for sub = 1:length(subs)
+for sub = 2%1:length(subs)
     subID      = subs{sub};
     saveName   = [folders.ica,'\\',subID,'_',folders.ica,'.mat'];
     saveFile   = 'y';
-    if isfile(saveName)
-        saveFile = input(['File for ',subID,' already exists. Overwrite? [y/n]'],'s');
-        if strcmp(saveFile,'n')
-            disp('File not saved. ICA decomp already exists.');
-        end
-    end
+%     if isfile(saveName)
+%         saveFile = input(['File for ',subID,' already exists. Overwrite? [y/n]'],'s');
+%         if strcmp(saveFile,'n')
+%             disp('File not saved. ICA decomp already exists.');
+%         end
+%     end
     if strcmp(saveFile,'y')
         disp(['Loading subject ',subID,' (',num2str(sub),')...']);
         load([folders.visRej,'\\',subID,'_',folders.visRej,'.mat'],'data');
-        cfg        = data.cfg;
-        cfg.method = 'runica';
-        comp       = ft_componentanalysis(cfg, data);
+        cfg              = data.cfg;
+        cfg.numcomponent = 25;
+        cfg.method       = 'runica';
+        comp             = ft_componentanalysis(cfg, data);
         disp(['Saving file ',subID,' (',num2str(sub),')...']);
         save(saveName,'data','comp');
     end
@@ -128,6 +158,8 @@ for sub = 1:length(subs)
     subID         = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     load([folders.ica,'\\',subID,'_',folders.ica,'.mat'],'data','comp');
+%     cfg           = data.cfg;
+%     cfg           = rmfield(cfg,'previous');
     cfg           = [];
     cfg.trl       = data.cfg.trl;
     cfg.layout    = 'biosemi64.lay';
@@ -141,47 +173,22 @@ for sub = 1:length(subs)
 %     artComp       = 1:20;
     cfg.component = artComp;
     data          = ft_rejectcomponent(cfg, comp, data);
-%     % Automatic EOG rejection
-%     cfg                           = data.cfg;
-%     cfg.artfctdef.reject          = 'complete';
-%     cfg.artfctdef.feedback        = 'yes';
-%     cfg.continuous                = 'no';
-%     eogChans                      = {'HEOG','VEOG'};
-%     cfg.artfctdef.zvalue.channel  = find(ismember(data.label,eogChans));
-%     data                          = ft_selectdata(cfg,data);
-%     [~, data.cfg.artfctdef.eog.artifact]      = ft_artifact_eog(cfg,data);
-%     % cfg.artfctdef.zvalue.cutoff        = zCutoff;
-%     % cfg.artfctdef.zvalue.channel       = 1:64;
-%     % [cfg, data.cfg.artfctdef.zvalue.artifact]          = ft_artifact_zvalue(cfg,data);
-%     data_no_artifacts              = ft_rejectartifact(data.cfg,data);
     disp(['Saving file ',subID,' (',num2str(sub),')...']);
-%     save([folders.rmvArtfct,'\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
+    save([folders.rmvArtfct,'\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
     close all
 end
 waitbar(1,'Done! Now do time lock analysis!');
-%% Interpolate missing electrodes
-cfg = data.cfg;
-cfg.method = 'template';
-cfg.feedback = 'no';
-neighbors = ft_prepare_neighbours(cfg,data);
-%%
-cfg = data.cfg;
-cfg.method = 'average';
-cfg.missingchannel = setdiff(allElecs.label,data.label);
-cfg.neighbours = neighbors; 
-interp = ft_channelrepair(cfg,data);
-
 %% Mean and store data
-for sub = 1:length(subs)
+for sub = [1,3,4]%:length(subs)
     subID = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     load([folders.rmvArtfct,'\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
     data.cfg          = rmfield(data.cfg,'previous');
     data.cfg.viewmode = 'butterfly';
-    data.cfg.method   = 'summary';
+    data.cfg.method   = 'trial';
     data.cfg.reref    = 'yes';
-    data.cfg.refchannel = {'M1' 'M2'};
-    data              = ft_rejectvisual(data.cfg,data);
+    data.cfg.refchannel = {'M'};
+%     data              = ft_rejectvisual(data.cfg,data);
     disp('Averaging over Canonical trials...');
     cfg           = data.cfg;
     cfg.trials    = find(ismember(data.trialinfo,trials.can));
@@ -225,12 +232,12 @@ cfg = difference.cfg;
 cfg = rmfield(cfg,'method');
 grandavg = ft_timelockgrandaverage(cfg, dataStruc.Diff{1}, dataStruc.Diff{2})
 %%
-,...
-    dataStruc.Diff{3}, dataStruc.Diff{4}, dataStruc.Diff{5}, dataStruc.Diff{6},...
-    dataStruc.Diff{7}, dataStruc.Diff{8}, dataStruc.Diff{9}, dataStruc.Diff{10},...
-    dataStruc.Diff{11}, dataStruc.Diff{12}, dataStruc.Diff{13}, dataStruc.Diff{14},...
-    dataStruc.Diff{15}, dataStruc.Diff{16}, dataStruc.Diff{17}, dataStruc.Diff{18},...
-    dataStruc.Diff{19}, dataStruc.Diff{20});
+% ,...
+%     dataStruc.Diff{3}, dataStruc.Diff{4}, dataStruc.Diff{5}, dataStruc.Diff{6},...
+%     dataStruc.Diff{7}, dataStruc.Diff{8}, dataStruc.Diff{9}, dataStruc.Diff{10},...
+%     dataStruc.Diff{11}, dataStruc.Diff{12}, dataStruc.Diff{13}, dataStruc.Diff{14},...
+%     dataStruc.Diff{15}, dataStruc.Diff{16}, dataStruc.Diff{17}, dataStruc.Diff{18},...
+%     dataStruc.Diff{19}, dataStruc.Diff{20});
 
 
 
@@ -255,60 +262,3 @@ ft_multiplotER(cfg, difference,dataCan, dataVio);
 cfg.channel = 'FC4';
 clf;
 ft_singleplotER(cfg,dataVio,dataCan,difference);
-%% Automatic artifact rejection
-sub = 1;
-subID = subs{sub};
-load([prepFolder,'\\',subID,'_',prepFolder,'.mat'],'data');
-cfg                           = data.cfg;
-cfg.trl                       = data.cfg.previous.trl;
-cfg.artfctdef.reject          = 'complete';
-cfg.artfctdef.feedback        = 'yes';
-cfg.continuous                = 'no';
-eogChans                      = {'HEOG','VEOG'};
-cfg.artfctdef.zvalue.channel  = find(ismember(data.label,eogChans));
-data                          = ft_selectdata(cfg,data);
-[cfg, data.cfg.artfctdef.eog.artifact]      = ft_artifact_eog(cfg,data);
-
-cfg.artfctdef.zvalue.cutoff        = zCutoff;
-cfg.artfctdef.zvalue.channel       = 1:64;
-[cfg, data.cfg.artfctdef.zvalue.artifact]          = ft_artifact_zvalue(cfg,data);
-data_no_artifacts              = ft_rejectartifact(data.cfg,data);
-
-
-
-%% Artifact rejection: Automatic and visual
-for sub = 2%1:1%length(pilotSubs)
-    subID         = pilotSubs{sub};
-    load([prepFolder,'\\',subID,'_',prepFolder,'.mat'],'data')
-    cfg           = [];
-%     cfg.headerfile = data.cfg.previous{1, 1}.previous.headerfile;
-    cfg.method    = 'trial';
-    cfg.feedback  = 'yes';
-    cfg.artfctdef.reject = 'complete';
-    % Z-value rejection
-    cfg.artfctdef.zvalue.cutoff  = zCutoff;
-    cfg.artfctdef.zvalue.channel = 1:66;
-%     cfg.artfctdef.zvalue.trlpadding   = 0.5;
-    cfg.artfctdef.zvalue.fltpadding   = 0.1;
-    cfg.artfctdef.zvalue.artpadding   = 0.1;
-    % algorithmic parameters
-    cfg.artfctdef.zvalue.cumulative = 'yes';
-    cfg.artfctdef.zvalue.medianfilter = 'yes';
-    cfg.artfctdef.zvalue.medianfiltord = 9;
-    cfg.artfctdef.zvalue.absdiff = 'yes';
-    % make the process interactive
-    cfg.artfctdef.zvalue.interactive = 'yes';
-    [cfg, artifact_jump] = ft_artifact_zvalue(cfg);
-end
-%%
-    cfg.artfctdef.zvalue.artifact  = ft_artifact_zvalue(cfg,data);
-    % EOG rejection
-    cfg.artfctdef.eog.cutoff       = zCutoff;
-    cfg.artfctdef.eog.channel      = {'HEOG' 'VEOG'};
-    cfg.artfctdef.eog.trlpadding   = 0.5;
-    cfg.artfctdef.eog.fltpadding   = 0.1;
-    cfg.artfctdef.eog.artpadding   = 0.1;
-    cfg.artfctdef.eog.artifact     = ft_artifact_eog(cfg,data);
-    data_no_artifacts              = ft_rejectartifact(cfg,data);
-%     data_clean   = ft_rejectvisual(cfg, data);
-% end

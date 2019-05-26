@@ -1,6 +1,7 @@
 %% Settings
 % Pilot data directory
 mainDir             = 'C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP';
+load('swopEEGpipeline\\biosemi_neighbours.mat','neighbors');
 cd(mainDir); addpath('swopEEGpipeline')
 allElecs = readtable('biosemi64.txt');
 % Directory names
@@ -21,6 +22,19 @@ preproc.demean      = 'yes';
 preproc.reref       = 'yes';
 preproc.refchannel  = {'M1' 'M2'};
 
+% Artifact rejection parameters
+artfctdef                    = [];
+artfctdef.reject             = 'complete';
+artfctdef.feedback           = 'no';
+artfctdef.eog.channel        = {'HEOG','VEOG'};
+artfctdef.zvalue.cutoff      = 4;
+artfctdef.zvalue.channel     = [1:64,67];
+artfctdef.zvalue.demean      = 'yes';
+artfctdef.jump.channel       = [1:64,67];
+artfctdef.threshold.channel  = [1:64,67];
+artfctdef.threshold.range    = 1500;
+% artfctdef.zvalue.interactive = 'yes';
+
 % Trial types (trigger labels)
 trials              = [];
 trials.can          = [212,214,222,224,231,232,233,234,241,242,243,244]; % canonical
@@ -38,6 +52,10 @@ frSubs = {'f_101mc','f_102bg','f_103tn','f_104sb'};
 % Swedish sub IDs
 swedSubs = {'s_04nm','s_07ba','s_09lo','s_12wg','s_13ff','s_14mc','s_15rj','s_17oh','s_18ak',...
     's_19am','s_21ma','s_23nj','s_24zk','s_25ks','s_26nm','s_27lm','s_28js','s_29ld','s_30la','s_31bf'};
+% Initialize cfg
+cfg = [];
+cfg.method = 'template';
+cfg.feedback = 'no';
 
 % Parameters by location
 if strcmp(origin,'fr')
@@ -54,16 +72,20 @@ elseif strcmp(origin,'sw') == 1
 end
 
 % Default cfg
-cfg = [];
+cfg.layout              = elecLayout;
+% neighbors               = ft_prepare_neighbours(cfg);
+cfg                     = [];
+cfg.neighbours          = neighbors;
 cfg.method              = 'trial';
 cfg.preproc             = preproc;
 cfg.baselinewindow      = [-0.1 0];
 cfg.continuous          = 'yes';
 cfg.blocksize           = 15;
-cfg.layout              = elecLayout;
 cfg.trialdef            = trialdef;
+% cfg.artfctdef           = artfctdef;
 cfg.trialfun            = 'ft_trialfun_swop';
-% cfg.demean              = 'yes';
-% cfg.reref               = 'yes';
-% cfg.refchannel          = {'M1','M2'};
+cfg.keepchannel         = 'repair';
+cfg.demean              = 'yes';
+cfg.reref               = 'yes';
+cfg.refchannel          = {'M1','M2'};
 default_cfg             = cfg;
