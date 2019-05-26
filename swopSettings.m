@@ -20,7 +20,7 @@ preproc.hpfilter    = 'yes';
 preproc.hpfreq      = .5; % Hz
 preproc.demean      = 'yes';
 preproc.reref       = 'yes';
-preproc.refchannel  = {'M1' 'M2'};
+preproc.refchannel  = {'M1' 'M2'};%{'EXG1' 'EXG2'};
 
 % Artifact rejection parameters
 artfctdef                    = [];
@@ -48,13 +48,14 @@ trialdef.poststim   = 1;
 
 % French pilot - native swedish sub IDs
 pilotSubs = {'s_500mk','s_501ml'};
-frSubs = {'f_101mc','f_102bg','f_103tn','f_104sb'};
+frSubs    = {'f_101mc','f_102bg','f_103tn','f_104sb'};
+
 % Swedish sub IDs
-swedSubs = {'s_04nm','s_07ba','s_09lo','s_12wg','s_13ff','s_14mc','s_15rj','s_17oh','s_18ak',...
+swedSubs  = {'s_04nm','s_07ba','s_09lo','s_12wg','s_13ff','s_14mc','s_15rj','s_17oh','s_18ak',...
     's_19am','s_21ma','s_23nj','s_24zk','s_25ks','s_26nm','s_27lm','s_28js','s_29ld','s_30la','s_31bf'};
 % Initialize cfg
-cfg = [];
-cfg.method = 'template';
+cfg          = [];
+cfg.method   = 'template';
 cfg.feedback = 'no';
 
 % Parameters by location
@@ -62,8 +63,8 @@ if strcmp(origin,'fr')
     % MoDyCo data settings
     elecLayout           = 'biosemi64.lay';
     folders.eeglabTag    = 'eeglabSet';
-%     subs                 = pilotSubs;
-    subs                 = frSubs;
+    subs                 = pilotSubs;
+%     subs                 = frSubs;
 elseif strcmp(origin,'sw') == 1
     % Humlab data settings
     elecLayout           = 'easycapM22.mat';
@@ -87,5 +88,5 @@ cfg.trialfun            = 'ft_trialfun_swop';
 cfg.keepchannel         = 'repair';
 cfg.demean              = 'yes';
 cfg.reref               = 'yes';
-cfg.refchannel          = {'M1','M2'};
+cfg.refchannel          = {'M1' 'M2'};%{'EXG1' 'EXG2'};
 default_cfg             = cfg;
