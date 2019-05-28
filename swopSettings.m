@@ -23,15 +23,16 @@ preproc.reref       = 'yes';
 preproc.refchannel  = {'M1' 'M2'};%{'EXG1' 'EXG2'};
 
 % Artifact rejection parameters
+eegChannels                  = [1:64,67];
 artfctdef                    = [];
 artfctdef.reject             = 'complete';
 artfctdef.feedback           = 'no';
 artfctdef.eog.channel        = {'HEOG','VEOG'};
 artfctdef.zvalue.cutoff      = 4;
-artfctdef.zvalue.channel     = [1:64,67];
+artfctdef.zvalue.channel     = eegChannels;
 artfctdef.zvalue.demean      = 'yes';
-artfctdef.jump.channel       = [1:64,67];
-artfctdef.threshold.channel  = [1:64,67];
+artfctdef.jump.channel       = eegChannels;
+artfctdef.threshold.channel  = eegChannels;
 artfctdef.threshold.range    = 1500;
 
 % Trial types (trigger labels)

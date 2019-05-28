@@ -7,13 +7,25 @@ Created on Sat May 18 17:38:14 2019
 
 import os, csv
 os.chdir('C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP')
-#%%
+#%% Process Stroop and Navon
 rawDir = os.path.join(os.getcwd(),'raw_data')
 subs = ['f_101mc','f_102bg','f_103tn','f_104sb']
 stroop = []
 navon = []
 ajt = []
 to_pop = []
+
+def cleanSet(results):
+	to_pop = []
+	for Idx, line in enumerate(results):
+		if Idx != 0 and line[0] == 'subject_id':
+			to_pop.append(Idx)
+		elif line[1].endswith('Practice'):
+			to_pop.append(Idx)
+	to_pop.sort(reverse = True)
+	for i in to_pop:
+		results.pop(i)
+	return results
 
 
 for sub in subs:
@@ -45,31 +57,29 @@ for sub in subs:
 #			for Idx, line in enumerate(g):
 #				if Idx == 0:
 #					print(line)
-
 #%%
+os.chdir('C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP\\swopEEGpipeline\\EFdata')
 
-def cleanSet(results):
-	to_pop = []
-	for Idx, line in enumerate(results):
-		if Idx != 0 and line[0] == 'subject_id':
-			to_pop.append(Idx)
-		elif line[1].endswith('Practice'):
-			to_pop.append(Idx)
-	to_pop.sort(reverse = True)
-	for i in to_pop:
-		results.pop(i)
-	return results
 
 stroop = cleanSet(stroop)
 navon = cleanSet(navon)
 
-fileName = 'swopEEGpipeline\\EFdata\\stroopAll.csv'
+fileName = 'stroopAll.csv'
 f = open(fileName,'w')
 for line in stroop:
 	f.write(''.join([','.join(line),'\n']))
 f.close()
-fileName = 'swopEEGpipeline\\EFdata\\navonAll.csv'
+fileName = 'navonAll.csv'
 f = open(fileName,'w')
 for line in navon:
 	f.write(''.join([','.join(line),'\n']))
 f.close()
+
+#%% Process Swedex, SCT, and Oxford
+
+intSubs = [int(sub[2:5]) for sub in subs]
+tasks = ['swedex','sct','oxford']
+for task in tasks:
+	f = open(''.join([task,'_pilot.txt']),'r')
+	g = csv.reader(f,delimiter = '\t')
+
