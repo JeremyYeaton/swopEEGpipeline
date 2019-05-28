@@ -1,8 +1,8 @@
 %% Settings
 % Pilot data directory
 mainDir             = 'C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP';
-load('swopEEGpipeline\\biosemi_neighbours.mat','neighbors');
 cd(mainDir); addpath('swopEEGpipeline')
+load('swopEEGpipeline\\biosemi_neighbours.mat','neighbors');
 allElecs = readtable('biosemi64.txt');
 % Directory names
 folders             = [];
@@ -33,7 +33,6 @@ artfctdef.zvalue.demean      = 'yes';
 artfctdef.jump.channel       = [1:64,67];
 artfctdef.threshold.channel  = [1:64,67];
 artfctdef.threshold.range    = 1500;
-% artfctdef.zvalue.interactive = 'yes';
 
 % Trial types (trigger labels)
 trials              = [];
@@ -63,13 +62,15 @@ if strcmp(origin,'fr')
     % MoDyCo data settings
     elecLayout           = 'biosemi64.lay';
     folders.eeglabTag    = 'eeglabSet';
-    subs                 = pilotSubs;
-%     subs                 = frSubs;
+%     subs                 = pilotSubs;
+    subs                 = frSubs;
 elseif strcmp(origin,'sw') == 1
     % Humlab data settings
     elecLayout           = 'easycapM22.mat';
     folders.eeglabTag    = 'bandpass_05to100';
     subs                 = swedSubs;
+    load(elecLayout);
+    allElecs             = lay;
 end
 
 % Default cfg

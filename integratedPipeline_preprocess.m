@@ -3,7 +3,7 @@ mainDir      = 'C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP';
 cd(mainDir); addpath('swopEEGpipeline')
 
 % Indicate origin for data-specific parameters
-origin = 'sw'; % 'sw' for Humlab, 'fr' for MoDyCo
+origin = 'fr'; % 'sw' for Humlab, 'fr' for MoDyCo
 swopSettings
 %% Import; epoch; filter; separate & mean EOGs
 tic
@@ -30,35 +30,35 @@ for sub = currSub:length(subs)
     if strcmp(origin,'fr')
         % HEOG
         cfg                     = data.cfg;
-        cfg.channel             = {'EXG3' 'EXG4'};%{'HEOG1','HEOG2'};
+        cfg.channel             = {'HEOG1','HEOG2'};%{'EXG3' 'EXG4'};
         cfg.reref               = 'yes';
         cfg.implicitref         = [];
-        cfg.refchannel          = {'EXG4'};%{'HEOG2'};
+        cfg.refchannel          = {'HEOG2'};%{'EXG4'};
         eogh                    = ft_preprocessing(cfg, data);
         cfg                     = data.cfg;
-        cfg.channel             = 'EXG3';%'HEOG1';
+        cfg.channel             = 'HEOG1';%'EXG3';
         eogh                    = ft_selectdata(cfg, eogh);
         eogh.label              = {'HEOG'};
         % VEOG
         cfg                     = data.cfg;
-        cfg.channel             = {'EXG5' 'EXG6'};%{'VEOG1','VEOG2'};
+        cfg.channel             = {'VEOG1','VEOG2'};%{'EXG5' 'EXG6'};%
         cfg.reref               = 'yes';
         cfg.implicitref         = [];
-        cfg.refchannel          = {'EXG6'};%{'VEOG2'};
+        cfg.refchannel          = {'VEOG2'};%{'EXG6'};
         eogv                    = ft_preprocessing(cfg, data);
         cfg                     = data.cfg;
-        cfg.channel             = 'EXG5';%'VEOG1';
+        cfg.channel             = 'VEOG1';%'EXG5';
         eogv                    = ft_selectdata(cfg, eogv);
         eogv.label              = {'VEOG'};
         % Mastoid reference
         cfg                     = data.cfg;
-        cfg.channel             = {'EXG1' 'EXG2'};%{'M1','M2'};
+        cfg.channel             = {'M1','M2'};%{'EXG1' 'EXG2'};
         cfg.reref               = 'yes';
         cfg.implicitref         = [];
-        cfg.refchannel          = {'EXG2'};%{'M2'};
+        cfg.refchannel          = {'M2'};%{'EXG2'};
         mast                    = ft_preprocessing(cfg, data);
         cfg                     = data.cfg;
-        cfg.channel             = 'EXG1';%'M1';
+        cfg.channel             = 'M1';%'EXG1';
         mast                    = ft_selectdata(cfg, mast);
         mast.label              = {'M'};
         cfg                     = data.cfg;
@@ -80,7 +80,7 @@ for sub = currSub:length(subs)
         mast                    = ft_selectdata(cfg, mast);
         mast.label              = {'M'};
         cfg                     = data.cfg;
-        cfg.channel             = setdiff(1:33, [1:2,34:35]);
+        cfg.channel             = setdiff(1:31, 32:33);
         data                    = ft_selectdata(cfg, data);
         cfg                     = data.cfg;
         data                    = ft_appenddata(cfg, data, mast);
@@ -95,8 +95,8 @@ for sub = currSub:length(subs)
     [cfg, artifact_eog]              = ft_artifact_eog(cfg,data);
     cfg.artfctdef.zvalue.cutoff      = 20;
     [cfg, artifact_zval]             = ft_artifact_zvalue(cfg,data);
-%     [cfg, artifact_jump]             = ft_artifact_jump(cfg,data);
-%     [cfg, artifact_thresh]           = ft_artifact_threshold(cfg,data);
+    [cfg, artifact_jump]             = ft_artifact_jump(cfg,data);
+    [cfg, artifact_thresh]           = ft_artifact_threshold(cfg,data);
     % Add artifacts to cfg
     cfg.artfctdef.eog.artifact       = artifact_eog;
     cfg.artfctdef.zvalue.artifact    = artifact_zval;
@@ -133,16 +133,7 @@ for sub = 1:length(subs)
         data             = ft_rejectvisual(cfg,data);
         rep = input('Further review necessary? [y/n]: ','s');
     end
-    cfg.method           = 'average';
     cfg.missingchannel   = setdiff(allElecs.label,data.label);
-    cfg.feedback         = 'no';
-    if ~isempty(cfg.missingchannel)
-        disp('Interpolating missing electrodes:');
-        for chan = cfg.missingchannel
-            disp(chan);
-        end
-        data            = ft_channelrepair(cfg,data);
-    end
     disp(['Saving file ',subID,' (',num2str(sub),')...']);
     save([folders.visRej,'\\',subID,'_',folders.visRej,'.mat'],'data');
 end
@@ -175,12 +166,10 @@ for sub = 1:length(subs)
     subID         = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     load([folders.ica,'\\',subID,'_',folders.ica,'.mat'],'data','comp');
-%     cfg           = data.cfg;
-%     cfg           = rmfield(cfg,'previous');
     cfg           = [];
     cfg.trl       = data.cfg.trl;
     cfg.layout    = 'biosemi64.lay';
-    cfg.component = 1:20;
+    cfg.component = 1:25;
     cfg.comment   = 'no';
     cfg.viewmode  = 'component';
     figure; ft_topoplotIC(cfg, comp)
@@ -199,12 +188,29 @@ for sub = 1:length(subs)
     subID = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     load([folders.rmvArtfct,'\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
+    cfg                  = data.cfg;
+    cfg.method           = 'average';
+    cfg.missingchannel   = setdiff(allElecs.label,data.label);
+    cfg.neighbours       = neighbors;
+    cfg.feedback         = 'no';
+    if ~isempty(cfg.missingchannel)
+        disp('Interpolating missing electrodes:');
+        for chan = cfg.missingchannel
+            disp(chan);
+        end
+        data             = ft_channelrepair(cfg,data);
+    end
+%     cfg.viewmode         = 'butterfly';
+%     cfg.continuous       = 'no';
+%     artifact_vis         = ft_databrowser(cfg,data);
+%     cfg.artfctdef.remove = 'complete';
+%     data                 = ft_rejectartifact(cfg,data);
+%     %
     data.cfg            = rmfield(data.cfg,'previous');
     data.cfg.viewmode   = 'butterfly';
     data.cfg.method     = 'trial';
     data.cfg.reref      = 'yes';
     data.cfg.refchannel = {'M'};
-%     data              = ft_rejectvisual(data.cfg,data);
     disp('Averaging over Canonical trials...');
     cfg            = data.cfg;
     cfg.trials     = find(ismember(data.trialinfo,trials.can));
@@ -218,10 +224,11 @@ for sub = 1:length(subs)
     cfg.operation  = 'subtract';
     cfg.parameter  = 'avg';
     difference     = ft_math(cfg, dataVio, dataCan);
+    dataCan.cfg    = rmfield(dataCan.cfg,'previous');
+    dataVio.cfg    = rmfield(dataVio.cfg,'previous');
     difference.cfg = rmfield(difference.cfg,'previous');
     disp(['Saving data file ',subID,' (',num2str(sub),')...']);
     save([folders.timelock,'\\',subID,'_',folders.timelock,'_data.mat'],'dataCan','dataVio');
-    clear data dataCan dataVio
     disp(['Saving difference file ',subID,' (',num2str(sub),')...']);
     save([folders.timelock,'\\',subID,'_',folders.timelock,'_diff.mat'],'difference');
 end
