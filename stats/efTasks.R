@@ -10,6 +10,11 @@ dataNavon = read.table(file = '..\\EFdata\\navonAll.csv', header = TRUE, sep = '
 dataBeh = read.table(file = '..\\EFdata\\resultsBeh.csv', header = TRUE, sep = ',')
 
 ## Clean the data
-dataStr <- dataStr %>%
-  group_by(Type) %>%
-  filter(Block < 4)
+stroopSum <- dataStroop %>%
+  filter(Block == 2) %>%
+  group_by(subject_id,Type) %>%
+  summarise(acc = mean(acc),RT = mean(RT, na.rm = TRUE))
+
+navonSum <- dataNavon %>%
+  group_by(subject_id,cond,Block) %>%
+  summarise(acc = mean(acc),RT = mean(RT, na.rm = TRUE))

@@ -6,8 +6,9 @@ Created on Sat May 18 17:38:14 2019
 """
 
 import os, csv
+#%%
 os.chdir('C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP')
-#%% Process Stroop and Navon
+#% Process Stroop and Navon
 rawDir = os.path.join(os.getcwd(),'raw_data')
 subs = ['f_101mc','f_102bg','f_103tn','f_104sb']
 stroop = []
@@ -38,14 +39,41 @@ for sub in subs:
 			g = csv.reader(f,delimiter = ',')
 			for line in g:					
 				if not line[0][0] == '#':
-					navon.append(line)
+					glob, loc = 0,0
+					entry = line
+					if line[7] == line[8]:
+						entry.append('1')
+					else:
+						entry.append('0')
+					if entry[9] == 'None':
+						entry[9] = ''
+					if entry[4] in entry[6]:
+						glob = 1
+					if entry[5] in entry[6]:
+						loc = 1
+					if glob and loc:
+						entry.append('GL')
+					elif glob:
+						entry.append('G')
+					elif loc:
+						entry.append('L')
+					else:
+						entry.append('')
+					navon.append(entry)
 			f.close()
 		elif file.endswith('.xpd') and file[:6] == 'stroop':
 			f = open(os.path.join(rawDir,sub,file), 'r')
 			g = csv.reader(f,delimiter = ',')
 			for line in g:
 				if not line[0][0] == '#':
-					stroop.append(line)
+					entry = line
+					if line[6] == line[7]:
+						entry.append('1')
+					else:
+						entry.append('0')
+					if entry[8] == 'None':
+						entry[8] = ''
+					stroop.append(entry)
 			f.close()
 		elif file.endswith('-1.txt'):
 			rawData = []
@@ -84,26 +112,35 @@ navon = cleanSet(navon)
 
 fileName = 'stroopAll.csv'
 f = open(fileName,'w')
+stroop[0][-1] = 'acc'
 for line in stroop:
+#	if line[0] == 'subject_id':
+#		line[-1] = 'acc'
 	f.write(''.join([','.join(line),'\n']))
 f.close()
 fileName = 'navonAll.csv'
 f = open(fileName,'w')
+navon[0][-2:] = 'acc','cond'
 for line in navon:
+#	if line[0] == 'subject_id':
+#		line[-1] = 'acc'
+#		line.append('cond')
 	f.write(''.join([','.join(line),'\n']))
 f.close()
 
-fileName = 'ajtAll.csv'
+fileName = 'ajt_pilot.txt'
 f = open(fileName,'w')
 for line in ajt:
 	f.write(''.join([','.join(line),'\n']))
 f.close()
 
 #%% Process Swedex, SCT, and Oxford
+results = [['subject_id','task','score']]
+
 
 subNums = [sub[2:5] for sub in subs]
-tasks = ['swedex','sct','oxford']
-for task in tasks:
+tasks = ['swedex','sct','oxford','ajt','stroop','navon']
+for task in tasks[:3]:
 	f = open(''.join([task,'_pilot.txt']),'r')
 	g = csv.reader(f,delimiter = '\t')
 	readout = []
@@ -113,25 +150,34 @@ for task in tasks:
 	for line in readout:
 		if line[9] == '999':
 			key = line
+		elif line[9] == '998':
+			key1 = line
 	correct = 0
 	for line in readout:
 		if line[9] in subNums:
 			correct = 0
-			print(line[9])
+			correct1 = 0
 			for Idx, rep in enumerate(line[10:]):
 				if line[Idx] == key[Idx]:
 					correct += 1
-			print(correct/len(line))
+				elif task == 'swedex' and line[Idx] == key1[Idx]:
+					correct += 1
+			entry = [[],[],[]]
+			entry = [line[9],task,str(round(correct/len(line[10:]),5))]
+			results.append(entry)
+for sub in subNums:
+	can,vio = 0,0
+	for line in ajt:
+		if line[0] == sub:
+			if line[1] == '1':
+				vio += int(line[2])
+			elif line[1] == '2':
+				can += int(line[2])
+	results.append([sub,'vio',str(vio)])
+	results.append([sub,'can',str(can)])
+	
 
-
-
-
-
-
-
-
-
-
-
-
-
+f = open('resultsBeh.csv','w')
+for line in results:
+	f.write(''.join([','.join(line),'\n']))
+f.close()
