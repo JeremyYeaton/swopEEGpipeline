@@ -47,7 +47,7 @@ cfg = [];
 cfg.interactive = 'yes';
 cfg.showoutline = 'yes';
 cfg.layout = elecLayout;
-ft_multiplotER(cfg, grandavg_diff,grandavg_can,grandavg_vio)
+ft_multiplotER(cfg, grandavg_diff);%,grandavg_can,grandavg_vio)
 %%
 cfg = data.cfg;
 cfg.operation = 'subtract';
