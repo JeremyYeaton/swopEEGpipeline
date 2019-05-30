@@ -4,10 +4,10 @@ cd(mainDir); addpath('swopEEGpipeline')
 
 % Indicate origin for data-specific parameters
 origin = 'sw'; % 'sw' for Humlab, 'fr' for MoDyCo
-swopSettings
+swopSettings_sw
 %% Import; epoch; filter; separate & mean EOGs
 tic
-currSub = 1;
+% currSub = 17;
 for sub = currSub:length(subs)
     subID            = subs{sub};
     EEGLABFILE       = [folders.prep,'\\',subID,'_',folders.eeglabTag,'.set'];
@@ -162,7 +162,7 @@ for sub = 1:length(subs)
 end
 waitbar(1,'Done! Now do component rejection!');
 %% Component rejection
-for sub = 1:length(subs)
+for sub = 4:length(subs)
     subID         = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     load([folders.ica,'\\',subID,'_',folders.ica,'.mat'],'data','comp');
