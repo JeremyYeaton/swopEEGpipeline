@@ -1,10 +1,9 @@
 %% Settings
 % Pilot data directory
 mainDir             = 'C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP';
-cd(mainDir); addpath('swopEEGpipeline');
+cd(mainDir); addpath('swopEEGpipeline')
 load('swopEEGpipeline\\biosemi_neighbours.mat','neighbors');
 allElecs = readtable('biosemi64.txt');
-load('swElectrodeTable.mat','swElecs');
 % Directory names
 folders             = [];
 folders.prep        = 'ft_preprocess';
@@ -12,6 +11,7 @@ folders.visRej      = 'ft_visRej';
 folders.ica         = 'ft_icaComponents';
 folders.rmvArtfct   = 'ft_rmvArtfct';
 folders.timelock    = 'ft_timelock';
+folders.results     = 'ft_results';
 
 % Preprocessing parameters
 preproc             = [];
@@ -21,10 +21,10 @@ preproc.hpfilter    = 'yes';
 preproc.hpfreq      = .5; % Hz
 preproc.demean      = 'yes';
 preproc.reref       = 'yes';
-preproc.refchannel  = {'M1' 'M2'};%{'EXG1' 'EXG2'};
+preproc.refchannel  = {'EXG1' 'EXG2'};
 
 % Artifact rejection parameters
-eegChannels                  = 3:32;
+eegChannels                  = [1:64,67];
 artfctdef                    = [];
 artfctdef.reject             = 'complete';
 artfctdef.feedback           = 'no';
@@ -64,16 +64,15 @@ if strcmp(origin,'fr')
     % MoDyCo data settings
     elecLayout           = 'biosemi64.lay';
     folders.eeglabTag    = 'eeglabSet';
-%     subs                 = pilotSubs;
-    subs                 = frSubs;
+    subs                 = pilotSubs;
+%     subs                 = frSubs;
 elseif strcmp(origin,'sw') == 1
     % Humlab data settings
-%     elecLayout           = 'easycapM22.mat';
-    elecLayout           = 'biosemi64.lay';
+    elecLayout           = 'easycapM22.mat';
     folders.eeglabTag    = 'bandpass_05to100';
     subs                 = swedSubs;
-%     load(elecLayout);
-%     allElecs             = lay;
+    load(elecLayout);
+    allElecs             = lay;
 end
 
 % Default cfg
@@ -92,5 +91,5 @@ cfg.trialfun            = 'ft_trialfun_swop';
 cfg.keepchannel         = 'repair';
 cfg.demean              = 'yes';
 cfg.reref               = 'yes';
-cfg.refchannel          = {'M1' 'M2'};%{'EXG1' 'EXG2'};
+cfg.refchannel          = {'EXG1' 'EXG2'};
 default_cfg             = cfg;

@@ -59,6 +59,35 @@ for sub in subs:
 						entry.append('L')
 					else:
 						entry.append('')
+					# Establish hits, misses, FA, and CR
+					if entry[1] == 'gbLc':
+						if entry[11] != '' and entry[10] == '1':
+							entry.append('H')
+						elif entry[11] != '' and entry[10] == '0':
+							entry.append('M')
+						elif entry[11] == '' and entry[10] == '0':
+							entry.append('FA')
+						else:
+							entry.append('CR')
+					elif entry[1] == 'glob':
+						if entry[11] in ['G','GL'] and entry[10] == '1':
+							entry.append('H')
+						elif entry[11] in ['G','GL'] and entry[10] == '0':
+							entry.append('M')
+						elif entry[11] in ['','L'] and entry[10] == '0':
+							entry.append('FA')
+						else:
+							entry.append('CR')
+					elif entry[1] == 'loca':
+						if entry[11] in ['L','GL'] and entry[10] == '1':
+							entry.append('H')
+						elif entry[11] in ['L','GL'] and entry[10] == '0':
+							entry.append('M')
+						elif entry[11] in ['','G'] and entry[10] == '0':
+							entry.append('FA')
+						else:
+							entry.append('CR')
+					entry.append('1')
 					navon.append(entry)
 			f.close()
 		elif file.endswith('.xpd') and file[:6] == 'stroop':
@@ -97,10 +126,6 @@ for sub in subs:
 					entry[1] = line[2][-1]
 					entry[2] = responses[Idx + 1][2][-1]
 					ajt.append(entry)
-#				if line[2][0] == 'C' and line[2][-1] == '1':
-#					vio += int(responses[Idx + 1][2][-1])
-#				elif line[2][0] == 'C' and line[2][-1] == '2':
-#					can += int(responses[Idx + 1][2][-1])
 				
 
 #%%
@@ -114,17 +139,13 @@ fileName = 'stroopAll.csv'
 f = open(fileName,'w')
 stroop[0][-1] = 'acc'
 for line in stroop:
-#	if line[0] == 'subject_id':
-#		line[-1] = 'acc'
 	f.write(''.join([','.join(line),'\n']))
 f.close()
+
 fileName = 'navonAll.csv'
 f = open(fileName,'w')
-navon[0][-2:] = 'acc','cond'
+navon[0][-3:] = 'acc','cond','hitMiss','ct'
 for line in navon:
-#	if line[0] == 'subject_id':
-#		line[-1] = 'acc'
-#		line.append('cond')
 	f.write(''.join([','.join(line),'\n']))
 f.close()
 
@@ -163,7 +184,11 @@ for task in tasks[:3]:
 				elif task == 'swedex' and line[Idx] == key1[Idx]:
 					correct += 1
 			entry = [[],[],[]]
-			entry = [line[9],task,str(round(correct/len(line[10:]),5))]
+			if task == 'swedex':
+				mult = 10
+			else:
+				mult = 1
+			entry = [line[9],task,str(round(correct/len(line[10:]),5)*mult)]
 			results.append(entry)
 for sub in subNums:
 	can,vio = 0,0
@@ -173,8 +198,8 @@ for sub in subNums:
 				vio += int(line[2])
 			elif line[1] == '2':
 				can += int(line[2])
-	results.append([sub,'vio',str(vio)])
-	results.append([sub,'can',str(can)])
+	results.append([sub,'ajt_vio',str(vio)])
+	results.append([sub,'ajt_can',str(can)])
 	
 
 f = open('resultsBeh.csv','w')

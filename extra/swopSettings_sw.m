@@ -1,9 +1,12 @@
 %% Settings
 % Pilot data directory
 mainDir             = 'C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP';
-cd(mainDir); addpath('swopEEGpipeline')
-load('swopEEGpipeline\\biosemi_neighbours.mat','neighbors');
-allElecs = readtable('biosemi64.txt');
+cd(mainDir); addpath('swopEEGpipeline');
+% load('swopEEGpipeline\\biosemi_neighbours.mat','neighbors');
+load('swopEEGpipeline\\sw_neighbours.mat','neighbors');
+% allElecs = readtable('biosemi64.txt');
+load('swElectrodeTable.mat','swElecs');
+allElecs = swElecs;
 % Directory names
 folders             = [];
 folders.prep        = 'ft_preprocess';
@@ -11,7 +14,6 @@ folders.visRej      = 'ft_visRej';
 folders.ica         = 'ft_icaComponents';
 folders.rmvArtfct   = 'ft_rmvArtfct';
 folders.timelock    = 'ft_timelock';
-folders.results     = 'ft_results';
 
 % Preprocessing parameters
 preproc             = [];
@@ -24,7 +26,7 @@ preproc.reref       = 'yes';
 preproc.refchannel  = {'M1' 'M2'};%{'EXG1' 'EXG2'};
 
 % Artifact rejection parameters
-eegChannels                  = [1:64,67];
+eegChannels                  = 3:32;
 artfctdef                    = [];
 artfctdef.reject             = 'complete';
 artfctdef.feedback           = 'no';
@@ -62,22 +64,32 @@ cfg.feedback = 'no';
 % Parameters by location
 if strcmp(origin,'fr')
     % MoDyCo data settings
+%     elecLayout           = 'biosemi64.lay';
     elecLayout           = 'biosemi64.lay';
     folders.eeglabTag    = 'eeglabSet';
 %     subs                 = pilotSubs;
     subs                 = frSubs;
 elseif strcmp(origin,'sw') == 1
     % Humlab data settings
-    elecLayout           = 'easycapM22.mat';
+%     elecLayout           = 'swLayout.lay';
+%     elecLayout           = 'easycapM22.mat';
+    elecLayout           = 'swedishLayout.mat';
+%     elecLayout           = 'biosemi64.lay';
     folders.eeglabTag    = 'bandpass_05to100';
     subs                 = swedSubs;
-    load(elecLayout);
-    allElecs             = lay;
+%     load(elecLayout);
+%     allElecs             = lay;
 end
-
+%%
 % Default cfg
-cfg.layout              = elecLayout;
+% cfg = []
+
+% cfg.method = 'distance';
+% cfg.neighbourdist = .25;
+% cfg.feedback = 'yes';
 % neighbors               = ft_prepare_neighbours(cfg);
+%%
+cfg.layout              = elecLayout;
 cfg                     = [];
 cfg.neighbours          = neighbors;
 cfg.method              = 'trial';
@@ -93,3 +105,7 @@ cfg.demean              = 'yes';
 cfg.reref               = 'yes';
 cfg.refchannel          = {'M1' 'M2'};%{'EXG1' 'EXG2'};
 default_cfg             = cfg;
+
+% Weird swedish labels
+badLabs = {'CZ','FP1','FP2','FZ','PZ'};
+goodLabs = {'Cz','Fp1','Fp2','Fz','Pz'};

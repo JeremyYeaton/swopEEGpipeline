@@ -3,12 +3,12 @@ mainDir      = 'C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP';
 cd(mainDir); addpath('swopEEGpipeline')
 
 % Indicate origin for data-specific parameters
-origin = 'sw'; % 'sw' for Humlab, 'fr' for MoDyCo
-swopSettings_sw
+origin = 'fr'; % 'sw' for Humlab, 'fr' for MoDyCo
+swopSettings
 %% Import; epoch; filter; separate & mean EOGs
 tic
-% currSub = 17;
-for sub = currSub:length(subs)
+currSub = 2;
+for sub = currSub%:length(subs)
     subID            = subs{sub};
     EEGLABFILE       = [folders.prep,'\\',subID,'_',folders.eeglabTag,'.set'];
     if strcmp(origin,'fr') && ~isfile(EEGLABFILE)
@@ -21,44 +21,46 @@ for sub = currSub:length(subs)
     cfg                     = default_cfg;
     cfg.dataset             = EEGLABFILE;
     cfg                     = ft_definetrial(cfg);
-%     diff                    = 844195;
-%     a                       = find(data.cfg.trl(:,1) > diff);
-%     cfg.trials              = a;
-%     cfg.trl                 = cfg.trl(a,:);
+    %
+    diff                    = 844195;
+    a                       = find(data.cfg.trl(:,1) > diff);
+    cfg.trials              = a;
+    cfg.trl                 = cfg.trl(a,:);
+    %
     data                    = ft_preprocessing(cfg);
     % Only separate and recombine EOG for French data
     if strcmp(origin,'fr')
         % HEOG
         cfg                     = data.cfg;
-        cfg.channel             = {'HEOG1','HEOG2'};%{'EXG3' 'EXG4'};
+        cfg.channel             = {'EXG3' 'EXG4'};
         cfg.reref               = 'yes';
         cfg.implicitref         = [];
-        cfg.refchannel          = {'HEOG2'};%{'EXG4'};
+        cfg.refchannel          = {'EXG4'};
         eogh                    = ft_preprocessing(cfg, data);
         cfg                     = data.cfg;
-        cfg.channel             = 'HEOG1';%'EXG3';
+        cfg.channel             = 'EXG3';
         eogh                    = ft_selectdata(cfg, eogh);
         eogh.label              = {'HEOG'};
         % VEOG
         cfg                     = data.cfg;
-        cfg.channel             = {'VEOG1','VEOG2'};%{'EXG5' 'EXG6'};%
+        cfg.channel             = {'EXG5' 'EXG6'};%
         cfg.reref               = 'yes';
         cfg.implicitref         = [];
-        cfg.refchannel          = {'VEOG2'};%{'EXG6'};
+        cfg.refchannel          = {'EXG6'};
         eogv                    = ft_preprocessing(cfg, data);
         cfg                     = data.cfg;
-        cfg.channel             = 'VEOG1';%'EXG5';
+        cfg.channel             = 'EXG5';
         eogv                    = ft_selectdata(cfg, eogv);
         eogv.label              = {'VEOG'};
         % Mastoid reference
         cfg                     = data.cfg;
-        cfg.channel             = {'M1','M2'};%{'EXG1' 'EXG2'};
+        cfg.channel             = {'EXG1' 'EXG2'};
         cfg.reref               = 'yes';
         cfg.implicitref         = [];
-        cfg.refchannel          = {'M2'};%{'EXG2'};
+        cfg.refchannel          = {'EXG2'};
         mast                    = ft_preprocessing(cfg, data);
         cfg                     = data.cfg;
-        cfg.channel             = 'M1';%'EXG1';
+        cfg.channel             = 'EXG1';
         mast                    = ft_selectdata(cfg, mast);
         mast.label              = {'M'};
         cfg                     = data.cfg;
@@ -67,23 +69,6 @@ for sub = currSub:length(subs)
         % append the Mast EOGH and EOGV channel to the EEG channels
         cfg                     = data.cfg;
         data                    = ft_appenddata(cfg, data, eogv, eogh, mast);
-    else
-        % Mastoid reference
-        cfg                     = data.cfg;
-        cfg.channel             = {'M1','M2'};
-        cfg.reref               = 'yes';
-        cfg.implicitref         = [];
-        cfg.refchannel          = {'M2'};
-        mast                    = ft_preprocessing(cfg, data);
-        cfg                     = data.cfg;
-        cfg.channel             = 'M1';
-        mast                    = ft_selectdata(cfg, mast);
-        mast.label              = {'M'};
-        cfg                     = data.cfg;
-        cfg.channel             = setdiff(1:31, 32:33);
-        data                    = ft_selectdata(cfg, data);
-        cfg                     = data.cfg;
-        data                    = ft_appenddata(cfg, data, mast);
     end
     cfg.reref               = 'yes';
     cfg.refchannel          = 'M';
@@ -162,7 +147,7 @@ for sub = 1:length(subs)
 end
 waitbar(1,'Done! Now do component rejection!');
 %% Component rejection
-for sub = 4:length(subs)
+for sub = 1:length(subs)
     subID         = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     load([folders.ica,'\\',subID,'_',folders.ica,'.mat'],'data','comp');
@@ -188,11 +173,12 @@ for sub = 1:length(subs)
     subID = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     load([folders.rmvArtfct,'\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
-    cfg                  = data.cfg;
+    cfg                  = [];%data.cfg;
     cfg.method           = 'average';
     cfg.missingchannel   = setdiff(allElecs.label,data.label);
     cfg.neighbours       = neighbors;
     cfg.feedback         = 'no';
+    cfg.layout           = 'biosemi64.lay';
     if ~isempty(cfg.missingchannel)
         disp('Interpolating missing electrodes:');
         for chan = cfg.missingchannel
@@ -200,27 +186,27 @@ for sub = 1:length(subs)
         end
         data             = ft_channelrepair(cfg,data);
     end
-%     cfg.viewmode         = 'butterfly';
-%     cfg.continuous       = 'no';
-%     artifact_vis         = ft_databrowser(cfg,data);
-%     cfg.artfctdef.remove = 'complete';
-%     data                 = ft_rejectartifact(cfg,data);
-%     %
-    data.cfg            = rmfield(data.cfg,'previous');
-    data.cfg.viewmode   = 'butterfly';
-    data.cfg.method     = 'trial';
-    data.cfg.reref      = 'yes';
-    data.cfg.refchannel = {'M'};
+% %     cfg.viewmode         = 'butterfly';
+% %     cfg.continuous       = 'no';
+% %     artifact_vis         = ft_databrowser(cfg,data);
+% %     cfg.artfctdef.remove = 'complete';
+% %     data                 = ft_rejectartifact(cfg,data);
+% %     %
+%     data.cfg            = rmfield(data.cfg,'previous');
+%     data.cfg.viewmode   = 'butterfly';
+%     data.cfg.method     = 'trial';
+%     data.cfg.reref      = 'yes';
+%     data.cfg.refchannel = {'M'};
     disp('Averaging over Canonical trials...');
-    cfg            = data.cfg;
+    cfg            = [];%data.cfg;
     cfg.trials     = find(ismember(data.trialinfo,trials.can));
     dataCan        = ft_timelockanalysis(cfg,data);
     disp('Averaging over Violation trials...');
-    cfg            = data.cfg;
+    cfg            = [];%data.cfg;
     cfg.trials     = find(ismember(data.trialinfo,trials.vio));
     dataVio        = ft_timelockanalysis(cfg,data);
     disp('Computing difference between conditions...');
-    cfg            = data.cfg;
+    cfg            = [];%data.cfg;
     cfg.operation  = 'subtract';
     cfg.parameter  = 'avg';
     difference     = ft_math(cfg, dataVio, dataCan);

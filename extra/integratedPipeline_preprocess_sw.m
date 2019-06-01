@@ -3,11 +3,11 @@ mainDir      = 'C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP';
 cd(mainDir); addpath('swopEEGpipeline')
 
 % Indicate origin for data-specific parameters
-origin = 'fr'; % 'sw' for Humlab, 'fr' for MoDyCo
-swopSettings
+origin = 'sw'; % 'sw' for Humlab, 'fr' for MoDyCo
+swopSettings_sw
 %% Import; epoch; filter; separate & mean EOGs
 tic
-currSub = 1;
+% currSub = 17;
 for sub = currSub:length(subs)
     subID            = subs{sub};
     EEGLABFILE       = [folders.prep,'\\',subID,'_',folders.eeglabTag,'.set'];
@@ -188,12 +188,17 @@ for sub = 1:length(subs)
     subID = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     load([folders.rmvArtfct,'\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
-    cfg                  = [];%data.cfg;
+%     cfg                  = data.cfg;
+    for i = 1:length(data.label)
+        if sum(ismember(badLabs,data.label{i})) > 0
+            data.label{i} = goodLabs{ismember(badLabs,data.label{i})};
+        end
+    end
+    cfg = [];
     cfg.method           = 'average';
     cfg.missingchannel   = setdiff(allElecs.label,data.label);
     cfg.neighbours       = neighbors;
     cfg.feedback         = 'no';
-    cfg.layout           = 'biosemi64.lay';
     if ~isempty(cfg.missingchannel)
         disp('Interpolating missing electrodes:');
         for chan = cfg.missingchannel
@@ -201,12 +206,12 @@ for sub = 1:length(subs)
         end
         data             = ft_channelrepair(cfg,data);
     end
-% %     cfg.viewmode         = 'butterfly';
-% %     cfg.continuous       = 'no';
-% %     artifact_vis         = ft_databrowser(cfg,data);
-% %     cfg.artfctdef.remove = 'complete';
-% %     data                 = ft_rejectartifact(cfg,data);
-% %     %
+%     cfg.viewmode         = 'butterfly';
+%     cfg.continuous       = 'no';
+%     artifact_vis         = ft_databrowser(cfg,data);
+%     cfg.artfctdef.remove = 'complete';
+%     data                 = ft_rejectartifact(cfg,data);
+%     %
 %     data.cfg            = rmfield(data.cfg,'previous');
 %     data.cfg.viewmode   = 'butterfly';
 %     data.cfg.method     = 'trial';
