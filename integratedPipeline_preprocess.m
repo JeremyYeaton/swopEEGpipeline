@@ -118,7 +118,7 @@ for sub = 1:length(subs)
     load([folders.prep,'\\',subID,'_',folders.prep,'.mat'],'data');
     % Visual inspection
     cfg                  = data.cfg;
-    cfg.channel          = 'all';
+    cfg.channel          = data.label;%'all';
     cfg.method           = 'summary';
     cfg.layout           = elecLayout;
     cfg.keepchannel      = 'no';
@@ -194,6 +194,7 @@ for sub = 1:length(subs)
     cfg.neighbours       = neighbors;
     cfg.feedback         = 'no';
     cfg.layout           = 'biosemi64.lay';
+    cfg.resamplefs       = 256;
     if ~isempty(cfg.missingchannel)
         disp('Interpolating missing electrodes:');
         for chan = cfg.missingchannel
@@ -201,6 +202,8 @@ for sub = 1:length(subs)
         end
         data             = ft_channelrepair(cfg,data);
     end
+    cfg = rmfield(cfg,'method');
+    data                 = ft_resampledata(cfg,data);
 % %     cfg.viewmode         = 'butterfly';
 % %     cfg.continuous       = 'no';
 % %     artifact_vis         = ft_databrowser(cfg,data);

@@ -4,11 +4,11 @@ cd(mainDir); addpath('swopEEGpipeline')
 
 % Indicate origin for data-specific parameters
 origin = 'fr'; % 'sw' for Humlab, 'fr' for MoDyCo
-swopSettings
+swopSettings_pilot
 %% Import; epoch; filter; separate & mean EOGs
 tic
 currSub = 2;
-for sub = currSub%:length(subs)
+for sub = currSub:length(subs)
     subID            = subs{sub};
     EEGLABFILE       = [folders.prep,'\\',subID,'_',folders.eeglabTag,'.set'];
     if strcmp(origin,'fr') && ~isfile(EEGLABFILE)
@@ -21,12 +21,12 @@ for sub = currSub%:length(subs)
     cfg                     = default_cfg;
     cfg.dataset             = EEGLABFILE;
     cfg                     = ft_definetrial(cfg);
-    %
-    diff                    = 844195;
-    a                       = find(data.cfg.trl(:,1) > diff);
-    cfg.trials              = a;
-    cfg.trl                 = cfg.trl(a,:);
-    %
+%     %
+%     diff                    = 844195;
+%     a                       = find(data.cfg.trl(:,1) > diff);
+%     cfg.trials              = a;
+%     cfg.trl                 = cfg.trl(a,:);
+%     %
     data                    = ft_preprocessing(cfg);
     % Only separate and recombine EOG for French data
     if strcmp(origin,'fr')
@@ -81,12 +81,12 @@ for sub = currSub%:length(subs)
     cfg.artfctdef.zvalue.cutoff      = 20;
     [cfg, artifact_zval]             = ft_artifact_zvalue(cfg,data);
     [cfg, artifact_jump]             = ft_artifact_jump(cfg,data);
-    [cfg, artifact_thresh]           = ft_artifact_threshold(cfg,data);
+%     [cfg, artifact_thresh]           = ft_artifact_threshold(cfg,data);
     % Add artifacts to cfg
     cfg.artfctdef.eog.artifact       = artifact_eog;
     cfg.artfctdef.zvalue.artifact    = artifact_zval;
     cfg.artfctdef.jump.artifact      = artifact_jump;
-    cfg.artfctdef.threshold.artifact = artifact_thresh;
+%     cfg.artfctdef.threshold.artifact = artifact_thresh;
     % Reject artifacts and save
     data                             = ft_rejectartifact(cfg,data);
     fileName = [folders.prep,'\\',subID,'_',folders.prep,'.mat'];

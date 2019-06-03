@@ -199,6 +199,7 @@ for sub = 1:length(subs)
     cfg.missingchannel   = setdiff(allElecs.label,data.label);
     cfg.neighbours       = neighbors;
     cfg.feedback         = 'no';
+    cfg.resamplefs       = 256;
     if ~isempty(cfg.missingchannel)
         disp('Interpolating missing electrodes:');
         for chan = cfg.missingchannel
@@ -206,6 +207,8 @@ for sub = 1:length(subs)
         end
         data             = ft_channelrepair(cfg,data);
     end
+    cfg = rmfield(cfg,'method');
+    data                 = ft_resampledata(cfg,data);
 %     cfg.viewmode         = 'butterfly';
 %     cfg.continuous       = 'no';
 %     artifact_vis         = ft_databrowser(cfg,data);
