@@ -94,3 +94,11 @@ cfg.demean              = 'yes';
 cfg.reref               = 'yes';
 cfg.refchannel          = {'M1' 'M2'};%{'EXG1' 'EXG2'};
 default_cfg             = cfg;
+
+% Latencies for ERP analysis
+lats = {[.3 .5],[.5 .7],[.7 .9],[.9 1]};
+mint = [.300,.500,.700,.900];
+maxt = [.500,.700,.900,1];
+
+% Electrode subsets
+frontal = {'F4','F3','F7','F8'};

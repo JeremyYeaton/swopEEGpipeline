@@ -5,7 +5,8 @@ library(neuropsychology)
 library(ggplot2)
 
 ## Read in Data
-dataStroop = read.table(file = '..\\EFdata\\stroopAll.csv', header = TRUE, sep = ',')
+dataStroop = read.table(file = '..\\EFdata\\stroopAll.csv', header = TRUE, sep = ',') %>%
+  select(subject_id,Block,Type,RT,acc)
 
 dataNavon = read.table(file = '..\\EFdata\\navonAll.csv', header = TRUE, sep = ',') %>%
   filter(Block != 'gbLc') %>%
@@ -29,22 +30,27 @@ navonSum <- dataNavon %>%
 
 navonAcc <- navonSum %>%
   select(subject_id,Block,hitMiss,ct) %>%
-  spread(hitMiss, ct) #%>%
+  spread(hitMiss, ct)
   
+navonAcc[is.na(navonAcc)] <- 0
+navonAcc <- navonAcc %>%
   mutate(nv_dprime = dprime(H,M,FA,CR)$dprime)
 
 stroopAcc <- stroopSum %>%
   select(subject_id,Type,acc) %>%
   mutate(meanAcc = mean(acc)) %>%
   spread(Type,acc) %>%
-  mutate(CongMu = (cong-meanAcc),
-         IncongMu = (incong-meanAcc),
-         neutMu=(neut-meanAcc))
+  mutate(accFacil = (cong-neut),
+         accCost = (incong-neut))
 
 stroopRT <- stroopSum %>%
   select(subject_id,Type,RT) %>%
   mutate(meanRT = mean(RT)) %>%
   spread(Type,RT) %>%
-  mutate(CongMu = (cong-meanRT),
-         IncongMu = (incong-meanRT),
-         NeutMu = (neut-meanRT))
+  mutate(rtFacil = (cong-neut),
+         rtCost = (incong-neut))
+## Plot stuff
+ggplot(stroopRT,aes(color = asfactor(subject_id))) +
+  geom_point(aes(x=facil,y=cost,color = meanRT))
+
+  

@@ -135,7 +135,7 @@ for sub = 1:length(subs)
     end
     cfg.missingchannel   = setdiff(allElecs.label,data.label);
     disp(['Saving file ',subID,' (',num2str(sub),')...']);
-    save([folders.visRej,'\\',subID,'_',folders.visRej,'.mat'],'data');
+%     save([folders.visRej,'\\',subID,'_',folders.visRej,'.mat'],'data');
 end
 waitbar(1,'Done! Now do ICA decomposition!');
 %% ICA decomposition
@@ -152,12 +152,17 @@ for sub = 1:length(subs)
     if strcmp(saveFile,'y')
         disp(['Loading subject ',subID,' (',num2str(sub),')...']);
         load([folders.visRej,'\\',subID,'_',folders.visRej,'.mat'],'data');
-        cfg              = data.cfg;
+        cfg              = [];
+        cfg.viewmode = 'butterfly';
+%         cfg.blocksize = 5;
+        cfg.continuous = 'no';
+        cfg = ft_databrowser(cfg,data);
+        data = ft_rejectartifact(cfg,data);
         cfg.numcomponent = 25;
         cfg.method       = 'runica';
         comp             = ft_componentanalysis(cfg, data);
         disp(['Saving file ',subID,' (',num2str(sub),')...']);
-        save(saveName,'data','comp');
+%         save(saveName,'data','comp');
     end
 end
 waitbar(1,'Done! Now do component rejection!');
@@ -183,6 +188,23 @@ for sub = 1:length(subs)
     close all
 end
 waitbar(1,'Done! Now do time lock analysis!');
+%% Visual inspection of individual data
+s = [1,3,5,8,12,14,15,20];
+for sub = s
+    subID         = subs{sub};
+    disp(['Loading subject ',subID,' (',num2str(sub),')...']);
+    load([folders.rmvArtfct,'\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
+    cfg = [];
+    cfg.viewmode = 'vertical';
+    cfg.preproc.baselinewindow = [-.100 0];
+    cfg.method = 'channel';
+    cfg.blocksize = 5;
+%     data = ft_rejectvisual(cfg,data);
+    cfg = ft_databrowser(cfg,data);
+    data = ft_removeartifact(cfg,data);
+    disp(['Saving file ',subID,' (',num2str(sub),')...']);
+    save([folders.rmvArtfct,'\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
+end
 %% Mean and store data
 for sub = 1:length(subs)
     subID = subs{sub};

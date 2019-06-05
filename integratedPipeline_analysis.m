@@ -6,7 +6,7 @@ cd(mainDir); addpath('swopEEGpipeline')
 origin = 'fr'; % 'sw' for Humlab, 'fr' for MoDyCo
 load('swedChans.mat','swedChans')
 swopSettings
-L1 = 'sw';
+L1 = 'fr';
 if strcmp(L1,'fr')
     subs = frSubs;
 elseif strcmp(L1,'sw')
@@ -33,6 +33,13 @@ for sub = 1:length(subs)
     dataStruc.Can{sub}         = dataCan;
     dataStruc.Diff{sub}        = difference;
 end
+if strcmp(L1,'fr')
+    strucFr = dataStruc;
+    save(['ft_results\struc_',L1,'.mat'],'strucFr')
+elseif strcmp(L1,'sw')
+    strucSw = dataStruc;
+    save(['ft_results\struc_',L1,'.mat'],'strucSw')
+end
 %% Calculate averages
 cfg = [];
 cfg.channel = swedChans;
@@ -49,7 +56,6 @@ if strcmp(L1,'fr')
     disp('Saving French averages...');
     save('grandavg_fr.mat','grandavgfr');
 elseif strcmp(L1,'sw')
-    cfg = [];
     grandavgsw.Diff = ft_timelockgrandaverage(cfg, dataStruc.Diff{1}, dataStruc.Diff{2},...
         dataStruc.Diff{3}, dataStruc.Diff{4},dataStruc.Diff{5}, dataStruc.Diff{6},...
         dataStruc.Diff{7}, dataStruc.Diff{8}, dataStruc.Diff{9}, dataStruc.Diff{10},...
@@ -75,43 +81,11 @@ elseif strcmp(L1,'sw')
     save('grandavg_sw.mat','grandavgsw');
 end
 %%
-load('grandavg_sw.mat','grandavgsw');
-load('grandavg_fr.mat','grandavgfr');
-%%
-cfg = [];
-cfg.interactive = 'no';
-cfg.showoutline = 'yes';
-cfg.layout = elecLayout;
-cfg.channel = swedChans;
-ft_multiplotER(cfg, grandavgsw.Diff,grandavgfr.Diff)
-% ft_multiplotER(cfg, grandavg_diff_fr,grandavg_can_fr,grandavg_vio_fr)
-% ft_multiplotER(cfg, grandavg_diff_sw,grandavg_can_sw,grandavg_vio_sw)
-%% Figures
-figure;
-cfg = [];
-for i = 3:length(swedChans)
-subplot(5,6,i-2);
-cfg.channel = swedChans(i);
-ft_singleplotER(cfg,grandavg_diff_sw,grandavg_can_sw,grandavg_vio_sw);
+means = [];
+elecMask = ismember(swedChans,frontal);
+for t = 1:length(mint)
+    mask = time >= mint(t) & time <= maxt(t);
+    means.fr(:,t) = squeeze(mean(grandavgfr.Diff.avg(:,mask),2));
+    means.sw(:,t) = squeeze(mean(grandavgsw.Diff.avg(:,mask),2));
 end
-
-figure;
-cfg = [];
-for i = 3:length(swedChans)
-subplot(5,6,i-2);
-cfg.channel = swedChans(i);
-ft_singleplotER(cfg,grandavg_diff_fr,grandavg_can_fr,grandavg_vio_fr);
-end
-
-%%
-cfg = data.cfg;
-cfg.operation = 'subtract';
-cfg.parameter = 'avg';
-difference = ft_math(cfg, dataVio, dataCan);
-cfg.interactive = 'yes';
-cfg.showoutline = 'yes';
-ft_multiplotER(cfg, difference,dataCan, dataVio);
-%%
-cfg.channel = 'FC4';
-clf;
-ft_singleplotER(cfg,dataVio,dataCan,difference);
+means.sw(elecMask,:)
