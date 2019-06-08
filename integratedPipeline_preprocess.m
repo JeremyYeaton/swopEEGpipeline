@@ -195,6 +195,8 @@ for sub = 1:length(subs)
     cfg.feedback         = 'no';
     cfg.layout           = 'biosemi64.lay';
     cfg.resamplefs       = 256;
+    cfg.reref            = 'yes';
+    cfg.refchannel       = 'M';
     if ~isempty(cfg.missingchannel)
         disp('Interpolating missing electrodes:');
         for chan = cfg.missingchannel
@@ -219,10 +221,14 @@ for sub = 1:length(subs)
     cfg            = [];%data.cfg;
     cfg.trials     = find(ismember(data.trialinfo,trials.can));
     dataCan        = ft_timelockanalysis(cfg,data);
+    cfg.baseline   = [-.1 0];
+    dataCan        = ft_timelockbaseline(cfg,dataCan);
     disp('Averaging over Violation trials...');
     cfg            = [];%data.cfg;
     cfg.trials     = find(ismember(data.trialinfo,trials.vio));
     dataVio        = ft_timelockanalysis(cfg,data);
+    cfg.baseline   = [-.1 0];
+    dataVio        = ft_timelockbaseline(cfg,dataVio);
     disp('Computing difference between conditions...');
     cfg            = [];%data.cfg;
     cfg.operation  = 'subtract';

@@ -167,7 +167,7 @@ for sub = 1:length(subs)
 end
 waitbar(1,'Done! Now do component rejection!');
 %% Component rejection
-for sub = 1:length(subs)
+for sub = 1%:length(subs)
     subID         = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     load([folders.ica,'\\',subID,'_',folders.ica,'.mat'],'data','comp');
@@ -189,24 +189,24 @@ for sub = 1:length(subs)
 end
 waitbar(1,'Done! Now do time lock analysis!');
 %% Visual inspection of individual data
-s = [1,3,5,8,12,14,15,20];
-for sub = s
-    subID         = subs{sub};
-    disp(['Loading subject ',subID,' (',num2str(sub),')...']);
-    load([folders.rmvArtfct,'\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
-    cfg = [];
-    cfg.viewmode = 'vertical';
-    cfg.preproc.baselinewindow = [-.100 0];
-    cfg.method = 'channel';
-    cfg.blocksize = 5;
-%     data = ft_rejectvisual(cfg,data);
-    cfg = ft_databrowser(cfg,data);
-    data = ft_removeartifact(cfg,data);
-    disp(['Saving file ',subID,' (',num2str(sub),')...']);
-    save([folders.rmvArtfct,'\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
-end
+% % s = [1,3,5,8,12,14,15,20];
+% for sub = 
+%     subID         = subs{sub};
+%     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
+%     load([folders.rmvArtfct,'\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
+%     cfg = [];
+%     cfg.viewmode = 'vertical';
+%     cfg.preproc.baselinewindow = [-.100 0];
+%     cfg.method = 'channel';
+%     cfg.blocksize = 5;
+% %     data = ft_rejectvisual(cfg,data);
+% %     cfg = ft_databrowser(cfg,data);
+% %     data = ft_removeartifact(cfg,data);
+%     disp(['Saving file ',subID,' (',num2str(sub),')...']);
+%     save([folders.rmvArtfct,'\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
+% end
 %% Mean and store data
-for sub = 1:length(subs)
+for sub = 1%:length(subs)
     subID = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     load([folders.rmvArtfct,'\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
@@ -246,10 +246,14 @@ for sub = 1:length(subs)
     cfg            = [];%data.cfg;
     cfg.trials     = find(ismember(data.trialinfo,trials.can));
     dataCan        = ft_timelockanalysis(cfg,data);
+    cfg.baseline   = [-.1 0];
+    dataCan        = ft_timelockbaseline(cfg,dataCan);
     disp('Averaging over Violation trials...');
     cfg            = [];%data.cfg;
     cfg.trials     = find(ismember(data.trialinfo,trials.vio));
     dataVio        = ft_timelockanalysis(cfg,data);
+    cfg.baseline   = [-.1 0];
+    dataVio        = ft_timelockbaseline(cfg,dataVio);
     disp('Computing difference between conditions...');
     cfg            = [];%data.cfg;
     cfg.operation  = 'subtract';

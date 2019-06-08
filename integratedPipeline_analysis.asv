@@ -5,7 +5,7 @@ cd(mainDir); addpath('swopEEGpipeline')
 % Indicate origin for data-specific parameters
 origin = 'fr'; % 'sw' for Humlab, 'fr' for MoDyCo
 swopSettingsAnalysis
-L1 = 'sw';
+L1 = 'fr';
 if strcmp(L1,'fr')
     subs = frSubs;
 elseif strcmp(L1,'sw')
@@ -83,10 +83,10 @@ means = [];
 elecMask = ismember(swedChans,frontal);
 for t = 1:length(mint)
     mask = time >= mint(t) & time <= maxt(t);
-    means.fr(:,t) = squeeze(mean(grandavgfr.Diff.avg(:,mask),2));
+%     means.fr(:,t) = squeeze(mean(grandavgfr.Diff.avg(elecMask,mask),2));
     means.sw(:,t) = squeeze(mean(grandavgsw.Diff.avg(:,mask),2));
 end
-a = mean(means.sw(elecMask,:))
+a = means.sw(elecMask,:)
 %% Create matrices for R
 % These mean amplitudes were subjected to repeated-measures ANOVA with Word 
 % order (V2/V3), Hemisphere (right/ left), Lateral position (lateral/ medial), 
@@ -137,12 +137,12 @@ means.right = ismember(means.elec,elecs.right);
 means.medial = ismember(means.elec,elecs.medial);
 %% T-test
 subs = frSubs;
-D = strucSw;
+D = strucFr;
 means = cell2table(cell(0,10), 'VariableNames',{'subject_id','elec','t3to5can',...
     't5to7can','t7to9can','t9to1can','t3to5vio','t5to7vio','t7to9vio','t9to1vio'});
 means.elec = string(means.elec);
-nChans = 29;%64;
-subs = 1:20;%[1,2,4];
+nChans = 64;%29;
+subs = [1,2,4];
 for n = 1:length(subs)
     sub = subs(n);
     elecMask = ismember(D.Can{sub}.label,allElecs.label);
@@ -156,24 +156,23 @@ for n = 1:length(subs)
     end
     E = string(D.Can{sub}.label(elecMask));
 %     means.subject_id(64*(sub-1) + 1:64*sub,1) = ones(nChans,1) * (sub + 100);
-    means.elec(nChans*(n-1) + 1:nChans*n,1) = E;
-    means.t3to5can(nChans*(n-1) + 1:nChans*n,1) = temp(:,1);
-    means.t5to7can(nChans*(n-1) + 1:nChans*n,1) = temp(:,2);
-    means.t7to9can(nChans*(n-1) + 1:nChans*n,1) = temp(:,3);
-    means.t9to1can(nChans*(n-1) + 1:nChans*n,1) = temp(:,4);
-    means.t3to5vio(nChans*(n-1) + 1:nChans*n,1) = temp(:,5);
-    means.t5to7vio(nChans*(n-1) + 1:nChans*n,1) = temp(:,6);
-    means.t7to9vio(nChans*(n-1) + 1:nChans*n,1) = temp(:,7);
-    means.t9to1vio(nChans*(n-1) + 1:nChans*n,1) = temp(:,8);    
+    means.elec(64*(n-1) + 1:64*n,1) = E;
+    means.t3to5can(64*(n-1) + 1:64*n,1) = temp(:,1);
+    means.t5to7can(64*(n-1) + 1:64*n,1) = temp(:,2);
+    means.t7to9can(64*(n-1) + 1:64*n,1) = temp(:,3);
+    means.t9to1can(64*(n-1) + 1:64*n,1) = temp(:,4);
+    means.t3to5vio(64*(n-1) + 1:64*n,1) = temp(:,5);
+    means.t5to7vio(64*(n-1) + 1:64*n,1) = temp(:,6);
+    means.t7to9vio(64*(n-1) + 1:64*n,1) = temp(:,7);
+    means.t9to1vio(64*(n-1) + 1:64*n,1) = temp(:,8);    
 end
 % means.elec = num2str(means.elec);
 % means.elec = allElecs.label(str2num(means.elec));
 %%
-a = ismember(means.elec,means.elec)%elecs.frontal);%[elecs.frontotemporal,elecs.frontal]);
-[h,P] = ttest(means.t3to5can(a),means.t3to5vio(a))
-[h,P] = ttest(means.t5to7can(a),means.t5to7vio(a))
-[h,P] = ttest(means.t7to9can(a),means.t7to9vio(a))
-[h,P] = ttest(means.t9to1can(a),means.t9to1vio(a))
+[~,P] = ttest(means.t3to5can,means.t3to5vio)
+[~,P] = ttest(means.t5to7can,means.t5to7vio)
+[~,P] = ttest(means.t7to9can,means.t7to9vio)
+[~,P] = ttest(means.t9to1can,means.t9to1vio)
 %%
 C = {'can','vio'};
 means.can_vio = num2str(means.can_vio);

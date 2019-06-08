@@ -1,40 +1,57 @@
 %% Load settings and relevant files
-swopSettings
-load(['ft_results\struc_',L1,'.mat'],'strucFr')
-load(['ft_results\struc_',L1,'.mat'],'strucSw')
+swopSettingsAnalysis
+load('ft_results\struc_fr.mat','strucFr')
+load('ft_results\struc_sw.mat','strucSw')
 load('grandavg_sw.mat','grandavgsw');
 load('grandavg_fr.mat','grandavgfr');
 load('time.mat','time');
+D = [];
+D.sw = strucSw;
+D.fr = strucFr;
 %% Plot individuals
+L1 = 'fr'
 frontal = {'F4','F3','F7','F8'};
 figure;
-nrow = 2;%4;
-ncol = 2;%5;
 cfg = [];
-cfg.preproc.refchannel = 'M';
-cfg.preproc.reref = 'yes';
-cfg.refchannel = 'M';
-cfg.reref = 'yes';
+% cfg.preproc.refchannel = 'M';
+% cfg.preproc.reref = 'yes';
+% cfg.refchannel = 'M';
+% cfg.reref = 'yes';
+if strcmp(L1,'fr')
+    subs = [1,2,4];
+    nrow = 2;
+    ncol = 2;
+    data = D.fr;
+elseif strcmp(L1,'sw')
+    subs = 1:length(swedSubs);
+    nrow = 4;
+    ncol = 5;
+    data = D.sw;
+end
 for sub = 1:length(subs)
     subplot(nrow,ncol,sub)
+    sub = subs(sub);
     cfg.channel = frontal;
-    ft_singleplotER(cfg,dataStruc.Can{sub},dataStruc.Vio{sub},dataStruc.Diff{sub})
+    ft_singleplotER(cfg,data.Can{sub},data.Vio{sub},data.Diff{sub})
 end
-
 %% Topos SW vs FR by time
 figure;
+titles = {'300 - 500 ms','500 - 700 ms','700 - 900 ms','900 - 1000 ms'};
 cfg = [];
-nrow = 2;
+nrow = 1;
 ncol = 4;
-% cfg.channel = swedChans;
+cfg.channel = swedChans;
 cfg.layout = elecLayout;
 for lat = 1:length(lats)
     tmask = time >= lats{lat}(1) & time <= lats{lat}(2);
     cfg.xlim = lats{lat};
+    cfg.zlim = [-1 2];
+    cfg.comment = 'no';
     subplot(nrow,ncol,lat)
+    title(titles{lat})
     ft_topoplotER(cfg,grandavgsw.Diff)
-    subplot(nrow,ncol,lat+ncol)
-    ft_topoplotER(cfg,grandavgfr.Diff)
+%     subplot(nrow,ncol,lat+ncol)
+%     ft_topoplotER(cfg,grandavgfr.Diff)
 end
 %% Topos fr participants x time
 figure;
@@ -47,9 +64,13 @@ for lat = 1:length(lats)
     tmask = time >= lats{lat}(1) & time <= lats{lat}(2);
     cfg.xlim = lats{lat};
     subplot(nrow,ncol,lat)
-    ft_topoplotER(cfg,grandavgsw.Diff)
+    cfg.zlim = [0 3];
+    ft_topoplotER(cfg,grandavgsw.Can)
+    colorbar
     subplot(nrow,ncol,lat+ncol)
-    ft_topoplotER(cfg,grandavgfr.Diff)
+    cfg.zlim = [0 6];
+    ft_topoplotER(cfg,grandavgfr.Can)
+    colorbar
 end
 %% By electrode
 figure;
@@ -73,19 +94,29 @@ cfg = [];
 cfg.interactive = 'no';
 cfg.showoutline = 'yes';
 cfg.layout = elecLayout;
-cfg.channel = swedChans;
+% cfg.channel = swedChans;
 cfg.baselinetype = 'zscore';
 nrow = 2;
 ncol = 2;
 figure;
-subplot(nrow,ncol,1)
-ft_multiplotER(cfg, grandavgsw.Diff)
-subplot(nrow,ncol,2)
-ft_multiplotER(cfg, grandavgfr.Diff)
-subplot(nrow,ncol,3)
+% % subplot(nrow,ncol,1)
+% % ft_multiplotER(cfg, grandavgsw.Diff)
+% % subplot(nrow,ncol,2)
+% % ft_multiplotER(cfg, grandavgfr.Diff)
+% % subplot(nrow,ncol,3)
 ft_multiplotER(cfg, grandavgfr.Diff,grandavgsw.Diff)
-% ft_multiplotER(cfg, grandavg_diff_fr,grandavg_can_fr,grandavg_vio_fr)
-% ft_multiplotER(cfg, grandavg_diff_sw,grandavg_can_sw,grandavg_vio_sw)
+% ft_multiplotER(cfg, grandavgfr.Can,grandavgfr.Vio)
+% ft_multiplotER(cfg, grandavgfr.Can,grandavgsw.Can)
+% % ft_multiplotER(cfg, grandavg_diff_fr,grandavg_can_fr,grandavg_vio_fr)
+% % ft_multiplotER(cfg, grandavg_diff_sw,grandavg_can_sw,grandavg_vio_sw)
+%%
+figure;
+cfg.xlim = [.5 .7];
+cfg.zlim = [-1.7 1.7]
+subplot(1,2,1)
+ft_topoplotER(cfg,grandavgfr.Diff)
+subplot(1,2,2)
+ft_topoplotER(cfg,grandavgsw.Diff)
 %%
 cfg = data.cfg;
 cfg.operation = 'subtract';
@@ -94,3 +125,106 @@ difference = ft_math(cfg, dataVio, dataCan);
 cfg.interactive = 'yes';
 cfg.showoutline = 'yes';
 ft_multiplotER(cfg, difference,dataCan, dataVio);
+%%
+figure;
+cfg = [];
+cfg.layout = elecLayout;
+cfg.xlim = [-.1 .3];
+ft_topoplotER(cfg,grandavgfr.Diff)
+%% 
+tag = 'Diff';
+set(0,'DefaultFigureVisible','off')
+gifname = ['topo_',tag,'.gif'];
+frameTime = .2;
+topoAxis = [-1.5,2.5];
+gap = 20;
+nrow = 2;
+ncol = 2;
+elecMask = ismember(grandavgfr.Diff.label,swedChans);
+
+for n = 1:gap:length(time)
+    cfg = [];
+    disp(num2str(n))
+    h = figure;
+    cfg.zlim = topoAxis;
+    cfg.layout = elecLayout;
+    cfg.comment = 'no';
+%     ft_singleplotER(cfg,grandavgfr.Can);
+    cfg.xlim = [time(n),time(n+gap)];
+    subplot(nrow,ncol,1);
+    ft_topoplotER(cfg,grandavgfr.Diff);
+    title(round(time(n)*1000)) % Topo title is time in ms
+    subplot(nrow,ncol,2);
+    plot(time,mean(grandavgfr.Diff.avg(elecMask,:)))
+    title(['Mean French ERP - ',tag])
+    line([time(n) time(n)],[-5 5],'Color','r','LineStyle',':')
+    axis([-.1 1 topoAxis(1) topoAxis(2)])
+    subplot(nrow,ncol,3);
+    ft_topoplotER(cfg,grandavgsw.Diff);
+    subplot(nrow,ncol,4);
+    plot(time,mean(grandavgsw.Diff.avg))
+    title(['Mean Swedish ERP - ',tag])
+    line([time(n) time(n)],[-5 5],'Color','r','LineStyle',':')
+    axis([-.1 1 topoAxis(1) topoAxis(2)])
+    drawnow 
+      % Capture the plot as an image 
+      frame = getframe(h); 
+      im = frame2im(frame); 
+      [imind,cm] = rgb2ind(im,256); 
+      % Write to the GIF File 
+      if n == 1 
+          imwrite(imind,cm,gifname,'gif', 'Loopcount',inf,'DelayTime',frameTime);
+      else 
+          imwrite(imind,cm,gifname,'gif','WriteMode','append','DelayTime',frameTime);
+      end 
+      hold off
+end
+
+%% GIF
+gifname = ['EEG/figures/' subj '_topoplot_grid.gif']
+trfAxis = [-100,400,-200,150];
+topoAxis = [-100,100];
+frameTime = .15; % How long the gif remains on each frame
+
+titles = {'TRF L1','TRF L2',}
+
+for n = 1:length(t)
+    disp(num2str(n))
+    h = figure;
+    % Top Left
+    subplot(2,2,1)
+    topoplot(eegModEn(:,n),chanlocs); % Topographic data here
+    caxis(topoAxis)
+    title(round(t(n))) % Topo title is time in ms
+    % Top Right
+    subplot(2,2,2)
+    hold on
+    plot(t,trfEn);
+    scatter(t(n),trfEn(n))
+    axis(trfAxis)
+    title(titles{1})
+    hold off
+    % Bottom Left
+    subplot(2,2,3)
+    topoplot(eegModFr(:,n),chanlocs); 
+    caxis(topoAxis)
+    % Bottom Right
+    subplot(2,2,4)
+    hold on
+    plot(t,trfFr) 
+    scatter(t(n),trfFr(n)) 
+    axis(trfAxis)
+    title(titles{2})
+    drawnow 
+      % Capture the plot as an image 
+      frame = getframe(h); 
+      im = frame2im(frame); 
+      [imind,cm] = rgb2ind(im,256); 
+      % Write to the GIF File 
+      if n == 1 
+          imwrite(imind,cm,gifname,'gif', 'Loopcount',inf,'DelayTime',frameTime);
+      else 
+          imwrite(imind,cm,gifname,'gif','WriteMode','append','DelayTime',frameTime);
+      end 
+      hold off
+end
