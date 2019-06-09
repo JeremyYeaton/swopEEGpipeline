@@ -54,25 +54,164 @@ for lat = 1:length(lats)
 %     ft_topoplotER(cfg,grandavgfr.Diff)
 end
 %% Topos fr participants x time
+figure('Renderer', 'painters', 'Position', [10 10 900 300]);
+cfg = [];
+nrow = 1;
+ncol = 4;
+cfg.channel = swedChans;
+cfg.layout = elecLayout;
+cfg.comment = 'no';
+titles = {'300 - 500 ms','500 - 700 ms','700 - 900 ms','900 - 1000 ms'};
+
+plotsize = [0.1300 0.3361 0.5422 0.7484];
+for lat = 1:length(lats)
+    cfg.xlim = lats{lat};
+%     subplot(nrow,ncol,lat)
+% %     cfg.zlim = [-5.5 5.5];
+%     cfg.zlim = [0 5.5];
+%     title(titles{lat})
+%     h = ft_topoplotER(cfg,grandavgfr.Can);
+%     if lat == 4
+%         colorbar
+%     end
+%     get(gca,'Position')
+%     set(gca,'Position',[plotsize(lat) 0.1100  0.1566 0.8150])
+%     subplot(nrow,ncol,lat+ncol)
+    subplot(nrow,ncol,lat)
+%     cfg.zlim = [-3 3];
+    cfg.zlim = [0 3];
+    title(titles{lat})
+    ft_topoplotER(cfg,grandavgsw.Can)   
+    get(gca,'Position')
+    if lat == 4
+        colorbar
+    end
+    set(gca,'Position',[plotsize(lat) 0.1100  0.1566 0.8150])
+end
+colormap jet
+%% Side by side multiplot
 figure;
 cfg = [];
+cfg.interactive = 'no';
+cfg.linestyle = {'-','--'};
+cfg.layout = elecLayout;
+cfg.showoutline = 'yes';
+cfg.channel = swedChans;
+cfg.showcomment = 'no';
+subplot(1,2,1)
+title('French')
+ft_multiplotER(cfg,grandavgfr.Can,grandavgfr.Vio)
+subplot(1,2,2)
+title('Swedish')
+ft_multiplotER(cfg,grandavgsw.Can,grandavgsw.Vio)
+%% By electrode -- andersson et al figures can vs vio
+% FR and SW for
 nrow = 2;
 ncol = 4;
-% cfg.channel = swedChans;
+fig2 = {'F7','F3','F4','F8'...
+'FT7','FC3','FC4','FT8'};
+
+fig3 = {'TP7','CP3','CP4','TP8',...
+    'P7','P3','P4','P8'};
+figure('Renderer', 'painters', 'Position', [10 10 900 600]);
+cfg = [];
+interactive = 'no';
+cfg.linestyle = {'-','--','-'};
+cfg.graphcolor = 'brk';
 cfg.layout = elecLayout;
-for lat = 1:length(lats)
-    tmask = time >= lats{lat}(1) & time <= lats{lat}(2);
-    cfg.xlim = lats{lat};
-    subplot(nrow,ncol,lat)
-    cfg.zlim = [0 3];
-    ft_topoplotER(cfg,grandavgsw.Can)
-    colorbar
-    subplot(nrow,ncol,lat+ncol)
-    cfg.zlim = [0 6];
-    ft_topoplotER(cfg,grandavgfr.Can)
-    colorbar
+cfg.showoutline = 'yes';
+for i = 1:length(fig3)
+    subplot(nrow,ncol,i);
+    cfg.channel = fig3{i};
+    cfg.ylim = [-12 12];
+    ft_singleplotER(cfg,grandavgfr.Can,grandavgfr.Vio);
+    line([-.1 1],[0 0],'Color','k','LineWidth',.5)
+    line([0 0],cfg.ylim,'Color','k','LineWidth',.5)
 end
-%% By electrode
+% legend('V2','V3')
+figure('Renderer', 'painters', 'Position', [10 10 900 600])
+for i = 1:length(fig3)
+    cfg.channel = fig3{i};
+    subplot(nrow,ncol,i);
+    cfg.ylim = [-5 5];
+    ft_singleplotER(cfg,grandavgsw.Can,grandavgsw.Vio);
+    line([-.1 1],[0 0],'Color','k','LineWidth',.5)
+    line([0 0],cfg.ylim,'Color','k','LineWidth',.5)
+end
+% Invert axis
+% set(gca,'Ydir','reverse')
+%% Difference by electrode
+nrow = 2;
+ncol = 4;
+fig2 = {'F7','F3','F4','F8'...
+'FT7','FC3','FC4','FT8'};
+
+fig3 = {'TP7','CP3','CP4','TP8',...
+    'P7','P3','P4','P8'};
+figure('Renderer', 'painters', 'Position', [10 10 900 600]);
+cfg = [];
+interactive = 'no';
+cfg.linestyle = {'-','--','-'};
+cfg.graphcolor = 'k';
+cfg.layout = elecLayout;
+cfg.showoutline = 'yes';
+for i = 1:length(fig3)
+    subplot(nrow,ncol,i);
+    cfg.channel = fig3{i};
+    cfg.ylim = [-6 6];
+    ft_singleplotER(cfg,grandavgfr.Diff);
+    line([-.1 1],[0 0],'Color','k','LineWidth',.5)
+    line([0 0],cfg.ylim,'Color','k','LineWidth',.5)
+end
+figure('Renderer', 'painters', 'Position', [10 10 900 600])
+for i = 1:length(fig3)
+    cfg.channel = fig3{i};
+    subplot(nrow,ncol,i);
+    cfg.ylim = [-2 2];
+    ft_singleplotER(cfg,grandavgsw.Diff);
+    line([-.1 1],[0 0],'Color','k','LineWidth',.5)
+    line([0 0],cfg.ylim,'Color','k','LineWidth',.5)
+end
+%% ERP traces at frontal sites
+cfg = [];
+cfg.channel = elecs.frontal;
+cfg.linestyle = {'-','--','-.'};
+cfg.graphcolor = 'brk';
+figure('Renderer', 'painters', 'Position', [10 10 900 600]);
+cfg.ylim = [-12 12];
+ft_singleplotER(cfg,grandavgfr.Can,grandavgfr.Vio,grandavgfr.Diff);
+line([-.1 1],[0 0],'Color','k','LineWidth',.5)
+line([0 0],cfg.ylim,'Color','k','LineWidth',.5)
+% legend('V2','V3','Difference')
+figure('Renderer', 'painters', 'Position', [10 10 900 600]);
+cfg.ylim = [-5 5];
+ft_singleplotER(cfg,grandavgsw.Can,grandavgsw.Vio,grandavgsw.Diff);
+line([-.1 1],[0 0],'Color','k','LineWidth',.5)
+line([0 0],cfg.ylim,'Color','k','LineWidth',.5)
+%% Plot amplitude at times against proficiency
+figure('Renderer', 'painters', 'Position', [100 100 900 300]);
+% amplitude at each time point, each subplot is time, xaxis proficiency,
+% yaxis amplitude of difference
+load('ft_results\\meanAmplitude.mat','D','data','cfg')
+for cond = 1:3
+    for lat = 1:4
+        subplot(3,4,(cond - 1)*ncol + lat)
+        plot(offline.ajt_dprime(subs),mean(data(subs,:,lat,cond),2),'.')
+    end
+end
+        
+        
+    
+
+
+
+%%
+% Proficiency should correlate with posterior P6 (P and PO), cogntition should
+% correlate with frontal components (F and FT)
+
+%% Topoplots of correlation?
+
+%% All electrodes
 figure;
 cfg = [];
 for i = 3:length(swedChans)

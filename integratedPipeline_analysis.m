@@ -40,6 +40,8 @@ elseif strcmp(L1,'sw')
 end
 %% Calculate averages
 cfg = [];
+cfg.baseline = 'yes';
+cfg.refchannel = 'M';
 % cfg.channel = swedChans;
 if strcmp(L1,'fr') 
     grandavgfr.Diff = ft_timelockgrandaverage(cfg, strucFr.Diff{1}, strucFr.Diff{2},...
@@ -174,6 +176,88 @@ a = ismember(means.elec,means.elec)%elecs.frontal);%[elecs.frontotemporal,elecs.
 [h,P] = ttest(means.t5to7can(a),means.t5to7vio(a))
 [h,P] = ttest(means.t7to9can(a),means.t7to9vio(a))
 [h,P] = ttest(means.t9to1can(a),means.t9to1vio(a))
+%% Correlations to run
+corrLats = {[0 .2],[.2 .4],[.5 .7],[.7 .9]};
+% Clusters of interest: left anterior (vs right anterior), left hemisphere
+% (vs right hemisphere), anterior vs posterior
+
+% Linguistic effects: ELAN, anterior P3 & P6, posterior P6
+% Attention effects: P3, anterior P6
+
+% EEG: need mean value per latency for all electrodes by participant
+% D(electrodes,participant,latency,condition)
+%% Meaned amplitude data in windows
+cfg = [];
+cfg.channel = swedChans;
+% cfg.channel = allElecs.label;
+cfg.avgovertime = 'yes';
+D = [];
+data = [];
+subs = [1,2,4];
+for lat = 1:length(corrLats)
+    cfg.latency = corrLats{lat};
+    for sub = subs
+        D{sub,lat,1} = ft_selectdata(cfg,strucFr.Can{sub});
+        D{sub,lat,2} = ft_selectdata(cfg,strucFr.Vio{sub});
+        D{sub,lat,3} = ft_selectdata(cfg,strucFr.Diff{sub});
+        [labels,S] = sort(D{sub,lat,1}.label);
+        data(sub,S,lat,1) = D{sub,lat,1}.avg;
+        data(sub,S,lat,2) = D{sub,lat,2}.avg;
+        data(sub,S,lat,3) = D{sub,lat,3}.avg;
+    end
+end
+% data(:,3,:,:) = data(:,4,:,:)
+sc = sort(swedChans);
+fc = sort(allElecs.label);
+save('ft_results\\meanAmplitude.mat','D','data','cfg')
+%%
+alpha = 0.01;
+% elc = elecs.central;
+clear r p c
+for lat = 1:length(corrLats)
+    for cond = 1:3
+    [r(:,lat,cond),p(:,lat,cond)] = corr(offline.rtCostIncong(subs), data(subs,:,lat,cond));
+%     r(p<alpha)
+%     sc(p<alpha)
+    end
+end
+a = p < alpha;
+b = p.* a;
+[c(:,1),c(:,2)] = find(a);
+d = r(a);
+
+%%
+[qr,qp] = corr(offline.swedex(subs),offline.ajt_dprime(subs))
+%% Query
+q = {'Cz','Pz','CP3'};
+p(ismember(sc,q))
+%%
+cfg = [];
+cfg.channel = frontal;
+cfg.avgovertime = 'yes';
+cfg.latency = [.9 1];
+can = [];
+for i = [1,2,4]
+    can{i} = ft_selectdata(cfg,strucFr.Can{i});
+    vio{i} = ft_selectdata(cfg,strucFr.Vio{i});
+end
+ttest([can{1}.avg,can{2}.avg,can{4}.avg],[vio{1}.avg,vio{2}.avg,vio{4}.avg])
+%%
+cfg = [];
+can = [];
+vio = [];
+cfg.channel = swedChans;
+cfg.avgovertime = 'yes';
+for i = 1:4
+    cfg.latency = lats{i};
+    can = ft_selectdata(cfg,grandavgfr.Can);
+    vio = ft_selectdata(cfg,grandavgfr.Vio);
+    [y,p] = ttest(can.avg,vio.avg,'dim',1,'alpha',.005)
+end
+% y = ttest(grandavgsw.Can.avg,grandavgsw.Vio.avg,'dim',1,'alpha',.001)
+%%
+plot(grandavgsw.Can.time,y,'.')
+
 %%
 C = {'can','vio'};
 means.can_vio = num2str(means.can_vio);
