@@ -210,6 +210,23 @@ end
 % correlate with frontal components (F and FT)
 
 %% Topoplots of correlation?
+%% Swedish and French multiplot
+cfg = [];
+cfg.layout = elecLayout;
+cfg.channels = swedChans;
+cfg.showoutline = 'yes';
+cfg.graphcolor = 'rb';
+cfg.linestyle = {'--','-'};
+cfg.showcomment = 'no';
+figure('Renderer', 'painters', 'Position', [10 10 900 600]);
+ft_multiplotER(cfg,grandavgfr.Diff,grandavgsw.Diff)
+legend('French','Swedish')
+%%
+cfg = [];
+% cfg.layout = elecLayout;
+cfg.elec = elec;
+cfg.channels = swedChans;
+ft_layoutplot(cfg,grandavgsw.Diff)
 
 %% All electrodes
 figure;
@@ -367,3 +384,16 @@ for n = 1:length(t)
       end 
       hold off
 end
+%%
+cfg = [];
+cfg.elec = ft_read_sens('dataWchans.set','fileformat','eeglab_set');
+% cfg.elec = elec
+% cfg.mask = 'headshape';
+% cfg.outline = 'headshape';
+% cfg.viewpoint = 'superior';
+lay = ft_prepare_layout(cfg);
+cfg.layout = lay;
+ft_layoutplot(cfg)
+
+%%
+figure;ft_plot_topo3d(elec.chanpos,grandavgfr.Diff.avg(1:64,200))
